@@ -28,7 +28,7 @@ public class ClockAndPoem {
     //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
     private static Integer CHUNK_SIZE = 16;
-    private static final Integer FREQ = 10;
+    private static final Integer FREQ = 15;
 
     private static PoemStack db = new PoemStack();
 
