@@ -28,7 +28,7 @@ public class ClockAndPoem {
     //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
     private static Integer CHUNK_SIZE = 16;
-    private static final Integer FREQ = 15;
+    private static final Integer FREQ = 30;
 
     private static PoemStack db = new PoemStack();
 
@@ -50,7 +50,9 @@ public class ClockAndPoem {
             }
 
             for (String item : data.split("\n")) {
-                db.push(item);
+                if (!item.trim().equals("")) {
+                    db.push(item);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
