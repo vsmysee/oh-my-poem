@@ -23,12 +23,21 @@ import java.util.stream.Collectors;
 
 public class ClockAndPoem {
 
+    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
     //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
+    private static Integer CHUNK_SIZE = 16;
+    private static final Integer FREQ = 10;
 
     private static PoemStack db = new PoemStack();
 
     static void initDB() {
+
+        if (screenSize.getHeight() < 1000) {
+            CHUNK_SIZE = 12;
+        }
+
 
         try {
 
@@ -53,11 +62,34 @@ public class ClockAndPoem {
     }
 
 
-    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    public static <T> List<List<T>> chunkList(List<T> list, int chunkSize) {
+        if (chunkSize <= 0) {
+            throw new IllegalArgumentException("Invalid chunk size: " + chunkSize);
+        }
+
+        List<List<T>> chunkList = new ArrayList<>(list.size() / chunkSize);
+        for (int i = 0; i < list.size(); i += chunkSize) {
+
+            List<T> base = new ArrayList<>();
+
+            if (i != 0) {
+                base.add(list.get(0));
+                base.add(list.get(1));
+            }
+
+            List<T> poems = list.subList(i, i + chunkSize >= list.size() ? list.size() - 1 : i + chunkSize);
+            if (poems.size() > 0) {
+                base.addAll(poems);
+                chunkList.add(base);
+            }
+        }
+        return chunkList;
+    }
+
 
     static class PoemStack {
 
-        private java.util.List<String> cache = new ArrayList<>();
+        private List<List<String>> cache = new ArrayList<>();
 
         private java.util.List<String> items = new ArrayList<>();
 
@@ -67,11 +99,11 @@ public class ClockAndPoem {
 
         public List<String> pop() {
             if (cache.size() > 0) {
-                List<String> res = new ArrayList<>(cache.size());
-                for (String item : cache) {
+                List<String> res = new ArrayList<>();
+                for (String item : cache.get(0)) {
                     res.add(item);
                 }
-                cache = new ArrayList<>();
+                cache.remove(0);
                 return res;
             }
 
@@ -79,11 +111,11 @@ public class ClockAndPoem {
             int index = 0 + rand.nextInt((items.size() - 1 - 0) + 1);
             List<String> poems = Arrays.asList(items.get(index).split(";"));
 
-            if (poems.size() > 16) {
-                cache.add(poems.get(0));
-                cache.add(poems.get(1));
-                cache.addAll(poems.subList(16, poems.size()));
-                return poems.subList(0, 16);
+            if (poems.size() > CHUNK_SIZE) {
+
+                cache = chunkList(poems, CHUNK_SIZE);
+
+                return pop();
             }
 
             return poems;
@@ -159,11 +191,9 @@ public class ClockAndPoem {
         });
 
         java.util.List<JPanel> jPanels = buildPoemItem(db.pop());
-        if (jPanels.size() > 15) {
-            drawPanel.setVisible(false);
-        } else {
-            drawPanel.setVisible(true);
-        }
+
+        drawPanel.setVisible(true);
+
         for (JPanel jPanel : jPanels) {
             poem.add(jPanel);
         }
@@ -322,16 +352,12 @@ public class ClockAndPoem {
             drawPanel.repaint();
 
 
-            if (time % 30 == 0) {
+            if (time % FREQ == 0) {
                 poem.removeAll();
 
-
                 java.util.List<JPanel> poemItems = buildPoemItem(db.pop());
-                if (poemItems.size() > 15) {
-                    drawPanel.setVisible(false);
-                } else {
-                    drawPanel.setVisible(true);
-                }
+
+                drawPanel.setVisible(true);
 
                 for (JPanel jPanel : poemItems) {
                     poem.add(jPanel);
@@ -401,8 +427,8 @@ public class ClockAndPoem {
             // 画圆
             g2d.drawOval(xCenter - radius, yCenter - radius, radius * 2, radius * 2);
 
-            g2d.drawOval(xCenter-10,yCenter-10,20,20);
-            g2d.fillOval(xCenter-10,yCenter-10,20,20);
+            g2d.drawOval(xCenter - 10, yCenter - 10, 20, 20);
+            g2d.fillOval(xCenter - 10, yCenter - 10, 20, 20);
 
 
             //画时钟的12个数字(如果用rotate方法则数字会倾斜倒立)
@@ -442,7 +468,7 @@ public class ClockAndPoem {
             int second = calendar.get(Calendar.SECOND);
 
             //画日期和星期
-            DateFormat df1 = new SimpleDateFormat("yyyy/MM/dd");
+            DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df2 = new SimpleDateFormat("E");
             g2d.drawString(df1.format(calendar.getTime()), xCenter - 40, yCenter + 35);
             g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
