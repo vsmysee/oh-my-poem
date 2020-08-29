@@ -25,19 +25,40 @@ public class ClockAndPoem {
 
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
+
+    private static final String OS_NAME = System.getProperty("os.name");
+    private static final String OS_VERSION = System.getProperty("os.version");
+
+
     //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
+    private static final Integer FONT_SIZE_TITLE = 15;
+    private static final Integer FONT_SIZE_POEM = 20;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
     private static PoemStack db = new PoemStack();
+
+
+    public static boolean isWindows() {
+        return OS_NAME.indexOf("Windows") > -1;
+    }
+
+
+    public static boolean isLinux() {
+        return OS_NAME.indexOf("Linux") > -1;
+    }
+
+
+    public static boolean isMacOs() {
+        return OS_NAME.indexOf("Mac OS") > -1;
+    }
 
     static void initDB() {
 
         if (screenSize.getHeight() < 1000) {
             CHUNK_SIZE = 12;
         }
-
 
         try {
 
@@ -79,7 +100,7 @@ public class ClockAndPoem {
                 base.add(list.get(1));
             }
 
-            List<T> poems = list.subList(i, i + chunkSize >= list.size() ? list.size() - 1 : i + chunkSize);
+            List<T> poems = list.subList(i, i + chunkSize >= list.size() ? list.size() : i + chunkSize);
             if (poems.size() > 0) {
                 base.addAll(poems);
                 chunkList.add(base);
@@ -101,10 +122,7 @@ public class ClockAndPoem {
 
         public List<String> pop() {
             if (cache.size() > 0) {
-                List<String> res = new ArrayList<>();
-                for (String item : cache.get(0)) {
-                    res.add(item);
-                }
+                List<String> res = cache.get(0);
                 cache.remove(0);
                 return res;
             }
@@ -150,17 +168,25 @@ public class ClockAndPoem {
 
             boolean title = (i == 1);
 
-            JPanel label = new JPanel();
-            JLabel poemItem = new JLabel(items.get(i));
-            poemItem.setFont(new Font(FONT, Font.BOLD, title ? 18 : 26));
-            if (title) {
-                poemItem.setText("<html><font color='blue'>" + poemItem.getText() + "</font></html>");
-                label.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-                label.add(new CirclePanel(items.get(0)));
-            }
-            label.add(poemItem);
+            JPanel panel = new JPanel();
+            String text = items.get(i);
 
-            list.add(label);
+
+            JLabel poemItem = new JLabel(text);
+            poemItem.setFont(new Font(FONT, Font.BOLD, title ? FONT_SIZE_TITLE : FONT_SIZE_POEM));
+            if (title) {
+
+                //add ico
+                panel.add(new CirclePanel(items.get(0)));
+
+                poemItem.setText("<html><font color='blue'>" + poemItem.getText() + "</font></html>");
+                panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+            }
+
+
+            panel.add(poemItem);
+
+            list.add(panel);
         }
 
         return list;
@@ -192,7 +218,8 @@ public class ClockAndPoem {
             }
         });
 
-        java.util.List<JPanel> jPanels = buildPoemItem(db.pop());
+        List<String> pop = db.pop();
+        java.util.List<JPanel> jPanels = buildPoemItem(pop);
 
         drawPanel.setVisible(true);
 
@@ -267,7 +294,7 @@ public class ClockAndPoem {
                 long end = System.currentTimeMillis() + selectTime[0] * 60 * 1000;
                 endDate = new Date(end);
                 drawPanel.color = Color.BLACK;
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 20));
+                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
                 timeLabel.setText("<html><font color='rgb(200,200,200)'>剩余" + (end - System.currentTimeMillis()) + "毫秒</font></html>");
             }
         });
@@ -303,7 +330,7 @@ public class ClockAndPoem {
             }
         });
 
-        timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 30));
+        timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
 
 
         Timer endTimer = new Timer(200, new ActionListener() {
@@ -354,7 +381,7 @@ public class ClockAndPoem {
             drawPanel.repaint();
 
 
-            if (time % FREQ == 0) {
+            if (time > FREQ && time % FREQ == 0) {
                 poem.removeAll();
 
                 java.util.List<JPanel> poemItems = buildPoemItem(db.pop());
@@ -377,14 +404,14 @@ public class ClockAndPoem {
 
             if (endDate == null && !timeSettingLock[0]) {
                 timeLabel.setText(sf.format(new Date()));
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 30));
+                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
             }
 
 
             if (endDate != null && endDate.before(new Date())) {
                 bottomPanel.setBackground(Color.RED);
                 timeLabel.setText(sf.format(new Date()));
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 30));
+                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
                 bottomPanel.updateUI();
                 if (!moveTimer.isRunning()) {
                     moveTimer.start();
