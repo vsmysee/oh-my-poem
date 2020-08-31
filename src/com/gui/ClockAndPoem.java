@@ -25,15 +25,14 @@ public class ClockAndPoem {
 
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_VERSION = System.getProperty("os.version");
 
 
     //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
-    private static final Integer FONT_SIZE_TITLE = 15;
-    private static final Integer FONT_SIZE_POEM = 20;
+    private static final Integer FONT_SIZE_TITLE = 14;
+    private static final Integer FONT_SIZE_POEM = 18;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
@@ -120,6 +119,10 @@ public class ClockAndPoem {
             items.add(item);
         }
 
+        public int cacheSize() {
+            return cache.size();
+        }
+
         public List<String> pop() {
             if (cache.size() > 0) {
                 List<String> res = cache.get(0);
@@ -180,7 +183,6 @@ public class ClockAndPoem {
                 panel.add(new CirclePanel(items.get(0)));
 
                 poemItem.setText("<html><font color='blue'>" + poemItem.getText() + "</font></html>");
-                panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
             }
 
 
@@ -195,16 +197,31 @@ public class ClockAndPoem {
     public void show() {
 
         JFrame frame = new JFrame();
-        frame.setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
+        if (isWindows()) {
+            frame.setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
+        }
+
+        if (isMacOs()) {
+        }
+
 
         JComponent content = Box.createVerticalBox();
+
+
+        //clock
 
         MyDrawPanel drawPanel = new MyDrawPanel(Color.BLACK);
         drawPanel.setPreferredSize(new Dimension(250, 250));
         content.add(drawPanel);
 
 
-        JPanel poem = new JPanel(new GridLayout(0, 1));
+        //color bar
+        Box hbox = Box.createHorizontalBox();
+        content.add(hbox);
+
+
+        //poem
+        JComponent poem = Box.createVerticalBox();
         content.add(poem);
 
 
@@ -219,6 +236,20 @@ public class ClockAndPoem {
         });
 
         List<String> pop = db.pop();
+
+        JPanel first = new JPanel();
+        first.setBackground(Color.RED);
+        first.setPreferredSize(new Dimension(-1, 1));
+        hbox.add(first);
+
+        if (db.cacheSize() > 0) {
+
+            for (int i = 0; i < db.cacheSize(); i++) {
+                JPanel rest = new JPanel();
+                rest.setPreferredSize(new Dimension(-1, 1));
+                hbox.add(rest);
+            }
+        }
         java.util.List<JPanel> jPanels = buildPoemItem(pop);
         for (JPanel jPanel : jPanels) {
             poem.add(jPanel);
@@ -392,6 +423,18 @@ public class ClockAndPoem {
                 poem.removeAll();
 
                 java.util.List<JPanel> poemItems = buildPoemItem(db.pop());
+
+                hbox.removeAll();
+                hbox.add(first);
+
+                if (db.cacheSize() > 0) {
+
+                    for (int i = 0; i < db.cacheSize(); i++) {
+                        JPanel rest = new JPanel();
+                        rest.setPreferredSize(new Dimension(-1, 1));
+                        hbox.add(rest);
+                    }
+                }
 
                 drawPanel.setVisible(true);
 
