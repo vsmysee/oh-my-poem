@@ -220,9 +220,6 @@ public class ClockAndPoem {
 
         List<String> pop = db.pop();
         java.util.List<JPanel> jPanels = buildPoemItem(pop);
-
-        drawPanel.setVisible(true);
-
         for (JPanel jPanel : jPanels) {
             poem.add(jPanel);
         }
@@ -232,6 +229,7 @@ public class ClockAndPoem {
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBorder(BorderFactory.createEtchedBorder());
         JLabel timeLabel = new JLabel(sf.format(new Date()));
+        timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
         bottomPanel.add(timeLabel);
         content.add(bottomPanel);
 
@@ -247,9 +245,11 @@ public class ClockAndPoem {
         content.add(timeSlider);
 
         JPanel confirmPanel = new JPanel();
-        JButton confirmButton = new JButton("OK");
+        JButton confirmButton = new JButton("计时");
         confirmPanel.add(confirmButton);
-        confirmButton.setVisible(false);
+        JButton cancelButton = new JButton("取消");
+        confirmPanel.add(cancelButton);
+        confirmPanel.setVisible(false);
         content.add(confirmPanel);
 
 
@@ -261,6 +261,9 @@ public class ClockAndPoem {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
+
+        // when time over
 
         AtomicBoolean down = new AtomicBoolean(true);
 
@@ -280,6 +283,8 @@ public class ClockAndPoem {
         Timer moveTimer = new Timer(10, move);
 
 
+        // time setting
+
         final Integer[] selectTime = {0};
         final boolean[] timeSettingLock = {false};
 
@@ -288,7 +293,7 @@ public class ClockAndPoem {
             @Override
             public void actionPerformed(ActionEvent e) {
                 timeSlider.setVisible(false);
-                confirmButton.setVisible(false);
+                confirmPanel.setVisible(false);
                 timeSettingLock[0] = false;
 
                 long end = System.currentTimeMillis() + selectTime[0] * 60 * 1000;
@@ -299,20 +304,25 @@ public class ClockAndPoem {
             }
         });
 
-        bottomPanel.addMouseListener(new MouseAdapter() {
+        cancelButton.addActionListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent e) {
 
                 if (timeSettingLock[0]) {
                     timeSlider.setVisible(false);
-                    confirmButton.setVisible(false);
+                    confirmPanel.setVisible(false);
                     timeSettingLock[0] = false;
                     timeLabel.setText(sf.format(new Date()));
                     return;
                 }
+            }
+        });
 
+        bottomPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
                 timeSlider.setVisible(true);
-                confirmButton.setVisible(true);
+                confirmPanel.setVisible(true);
                 timeSettingLock[0] = true;
                 timeLabel.setText("<html><font color='rgb(200,200,200)'>" + timeSlider.getValue() + "分钟后提醒</font></html>");
                 selectTime[0] = timeSlider.getValue();
@@ -329,8 +339,6 @@ public class ClockAndPoem {
 
             }
         });
-
-        timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
 
 
         Timer endTimer = new Timer(200, new ActionListener() {
@@ -374,14 +382,13 @@ public class ClockAndPoem {
         });
 
 
-        long time = 0;
+        long timeRecorder = 0;
 
         while (true) {
 
             drawPanel.repaint();
 
-
-            if (time > FREQ && time % FREQ == 0) {
+            if (timeRecorder > FREQ && timeRecorder % FREQ == 0) {
                 poem.removeAll();
 
                 java.util.List<JPanel> poemItems = buildPoemItem(db.pop());
@@ -404,14 +411,12 @@ public class ClockAndPoem {
 
             if (endDate == null && !timeSettingLock[0]) {
                 timeLabel.setText(sf.format(new Date()));
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
             }
 
 
             if (endDate != null && endDate.before(new Date())) {
                 bottomPanel.setBackground(Color.RED);
                 timeLabel.setText(sf.format(new Date()));
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
                 bottomPanel.updateUI();
                 if (!moveTimer.isRunning()) {
                     moveTimer.start();
@@ -422,7 +427,7 @@ public class ClockAndPoem {
 
             try {
                 Thread.sleep(1000);
-                time++;
+                timeRecorder++;
             } catch (Exception ex) {
             }
         }
@@ -452,7 +457,7 @@ public class ClockAndPoem {
             int xCenter = this.getWidth() / 2;
             int yCenter = this.getHeight() / 2;
             // 计算半径
-            int radius = (int) (Math.min(this.getWidth(), this.getHeight()) * 0.8 * 0.5);
+            int radius = (int) (this.getHeight() * 0.8 * 0.5);
             // 画圆
             g2d.drawOval(xCenter - radius, yCenter - radius, radius * 2, radius * 2);
 
@@ -462,9 +467,6 @@ public class ClockAndPoem {
 
             //画时钟的12个数字(如果用rotate方法则数字会倾斜倒立)
             for (int i = 0; i < 12; i++) {
-                //已知圆中心占坐标(x0,y0),半径r;角度a0,则圆上任一点坐标（x,y）计算：
-                //x = x0 + r * cos(ao * 3.14 /180)
-                //y = y0 + r * sin(ao * 3.14 /180)
 
                 double dd = Math.PI / 180 * i * (360 / 12); //每次转360/12度
                 int x = (xCenter - 4) + (int) ((radius - 12) * Math.cos(dd));
@@ -499,8 +501,8 @@ public class ClockAndPoem {
             //画日期和星期
             DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df2 = new SimpleDateFormat("E");
-            g2d.drawString(df1.format(calendar.getTime()), xCenter - 40, yCenter + 35);
-            g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
+            //g2d.drawString(df1.format(calendar.getTime()), xCenter - 40, yCenter + 35);
+            //g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
 
             // 画时钟的图形
             double hAngle = (hour - 12 + minute / 60d) * 360d / 12d;
@@ -524,7 +526,7 @@ public class ClockAndPoem {
             double sAngle = second * 360d / 60d;
             g2d.rotate(Math.toRadians(sAngle), xCenter, yCenter);
             g2d.setColor(Color.RED);
-            g2d.drawLine(xCenter, yCenter + 10, xCenter, 35);
+            g2d.drawLine(xCenter, yCenter, xCenter, 35);
         }
     }
 
