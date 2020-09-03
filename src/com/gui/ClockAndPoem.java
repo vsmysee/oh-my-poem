@@ -28,8 +28,6 @@ public class ClockAndPoem {
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_VERSION = System.getProperty("os.version");
 
-
-    //private static final String FONT = "华文隶书";
     private static final String FONT = "黑体";
     private static final Integer FONT_SIZE_TITLE = 14;
     private static final Integer FONT_SIZE_POEM = 18;
@@ -115,24 +113,79 @@ public class ClockAndPoem {
 
         private java.util.List<String> items = new ArrayList<>();
 
+        private List<String> history = new ArrayList<>();
+
+
         public void push(String item) {
             items.add(item);
+        }
+
+        public void clearCache() {
+            cache.clear();
         }
 
         public int cacheSize() {
             return cache.size();
         }
 
+        public void addHistory(String poem) {
+            if (history.size() > 10) {
+                history.clear();
+            }
+            history.add(poem);
+        }
+
+        public String getHistory() {
+            if (history.size() > 1) {
+                String cacheItem = history.get(history.size() - 2);
+                history.remove(history.size() - 2);
+                return cacheItem;
+            }
+            return null;
+        }
+
+        public String random() {
+
+            Random rand = new Random();
+            int index = 0 + rand.nextInt((items.size() - 1 - 0) + 1);
+            String poem = items.get(index);
+            addHistory(poem);
+            return poem;
+        }
+
+        public List<String> popHistory() {
+
+            clearCache();
+
+            String poem = getHistory();
+            if (poem == null) {
+                return pop();
+            }
+
+            List<String> poems = Arrays.asList(poem.split(";"));
+
+            if (poems.size() > CHUNK_SIZE) {
+
+                cache = chunkList(poems, CHUNK_SIZE);
+
+                return pop();
+            }
+
+            return poems;
+        }
+
+
         public List<String> pop() {
+
             if (cache.size() > 0) {
                 List<String> res = cache.get(0);
                 cache.remove(0);
                 return res;
             }
 
-            Random rand = new Random();
-            int index = 0 + rand.nextInt((items.size() - 1 - 0) + 1);
-            List<String> poems = Arrays.asList(items.get(index).split(";"));
+            String poem = random();
+
+            List<String> poems = Arrays.asList(poem.split(";"));
 
             if (poems.size() > CHUNK_SIZE) {
 
@@ -211,7 +264,7 @@ public class ClockAndPoem {
         //clock
 
         MyDrawPanel drawPanel = new MyDrawPanel(Color.BLACK);
-        drawPanel.setPreferredSize(new Dimension(250, 250));
+        drawPanel.setPreferredSize(new Dimension(200, 200));
         content.add(drawPanel);
 
 
@@ -228,10 +281,12 @@ public class ClockAndPoem {
         poem.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int x = screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue();
-                int y = screenSize.height - Double.valueOf(frame.getSize().getHeight()).intValue();
-                frame.setLocation(x, y);
-                frame.revalidate();
+                if (e.getClickCount() == 2) {
+                    int x = screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue();
+                    int y = screenSize.height - Double.valueOf(frame.getSize().getHeight()).intValue();
+                    frame.setLocation(x, y);
+                    frame.revalidate();
+                }
             }
         });
 
@@ -246,6 +301,7 @@ public class ClockAndPoem {
 
             for (int i = 0; i < db.cacheSize(); i++) {
                 JPanel rest = new JPanel();
+                rest.setBackground(Color.BLACK);
                 rest.setPreferredSize(new Dimension(-1, 1));
                 hbox.add(rest);
             }
@@ -292,6 +348,27 @@ public class ClockAndPoem {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
+        content.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"),
+                "refreshPoem");
+
+        content.getInputMap().put(KeyStroke.getKeyStroke("LEFT"),
+                "lastPoem");
+
+
+        content.getActionMap().put("refreshPoem",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        refreshPoem(frame, drawPanel, hbox, poem, first, false);
+                    }
+                });
+
+        content.getActionMap().put("lastPoem",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        refreshPoem(frame, drawPanel, hbox, poem, first, true);
+                    }
+                });
 
 
         // when time over
@@ -391,13 +468,16 @@ public class ClockAndPoem {
         drawPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Point location = frame.getLocation();
-                if (location.x > screenSize.getWidth() / 2) {
-                    frame.setLocation(0, 0);
-                    frame.revalidate();
-                } else {
-                    frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
-                    frame.revalidate();
+
+                if (e.getClickCount() == 2) {
+                    Point location = frame.getLocation();
+                    if (location.x > screenSize.getWidth() / 2) {
+                        frame.setLocation(0, 0);
+                        frame.revalidate();
+                    } else {
+                        frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
+                        frame.revalidate();
+                    }
                 }
             }
 
@@ -420,36 +500,8 @@ public class ClockAndPoem {
             drawPanel.repaint();
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0) {
-                poem.removeAll();
 
-                java.util.List<JPanel> poemItems = buildPoemItem(db.pop());
-
-                hbox.removeAll();
-                hbox.add(first);
-
-                if (db.cacheSize() > 0) {
-
-                    for (int i = 0; i < db.cacheSize(); i++) {
-                        JPanel rest = new JPanel();
-                        rest.setPreferredSize(new Dimension(-1, 1));
-                        hbox.add(rest);
-                    }
-                }
-
-                drawPanel.setVisible(true);
-
-                for (JPanel jPanel : poemItems) {
-                    poem.add(jPanel);
-                }
-
-                poem.updateUI();
-                frame.pack();
-                int x = Double.valueOf(frame.getSize().getWidth()).intValue();
-                if (frame.getLocation().x == 0) {
-                    frame.setLocation(0, 0);
-                } else {
-                    frame.setLocation(screenSize.width - x, 0);
-                }
+                refreshPoem(frame, drawPanel, hbox, poem, first,false);
             }
 
             if (endDate == null && !timeSettingLock[0]) {
@@ -473,6 +525,40 @@ public class ClockAndPoem {
                 timeRecorder++;
             } catch (Exception ex) {
             }
+        }
+    }
+
+    private void refreshPoem(JFrame frame, MyDrawPanel drawPanel, Box hbox, JComponent poem, JPanel first, boolean history) {
+        poem.removeAll();
+
+        List<JPanel> poemItems = buildPoemItem(history ? db.popHistory() : db.pop());
+
+        hbox.removeAll();
+        hbox.add(first);
+
+        if (db.cacheSize() > 0) {
+
+            for (int i = 0; i < db.cacheSize(); i++) {
+                JPanel rest = new JPanel();
+                rest.setBackground(Color.BLACK);
+                rest.setPreferredSize(new Dimension(-1, 1));
+                hbox.add(rest);
+            }
+        }
+
+        drawPanel.setVisible(true);
+
+        for (JPanel jPanel : poemItems) {
+            poem.add(jPanel);
+        }
+
+        poem.updateUI();
+        frame.pack();
+        int x = Double.valueOf(frame.getSize().getWidth()).intValue();
+        if (frame.getLocation().x == 0) {
+            frame.setLocation(0, 0);
+        } else {
+            frame.setLocation(screenSize.width - x, 0);
         }
     }
 
@@ -530,8 +616,8 @@ public class ClockAndPoem {
             //时钟的60个刻度
             for (int i = 0; i < 60; i++) {
                 int w = i % 5 == 0 ? 5 : 3;
-                g2d.fillRect(xCenter - 2, 28, w, 3);
-                g2d.rotate(Math.toRadians(6), xCenter, yCenter);
+                //g2d.fillRect(xCenter - 2, 28, w, 3);
+                //g2d.rotate(Math.toRadians(6), xCenter, yCenter);
             }
             //设置旋转重置
             g2d.setTransform(old);
