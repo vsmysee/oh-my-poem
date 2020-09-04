@@ -10,10 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -36,16 +33,17 @@ public class ClockAndPoem {
 
     private static PoemStack db = new PoemStack();
 
+    private static Set<String> author = new HashSet<>();
+
+    private static Map<String, List<String>> authorPoems = new HashMap<>();
 
     public static boolean isWindows() {
         return OS_NAME.indexOf("Windows") > -1;
     }
 
-
     public static boolean isLinux() {
         return OS_NAME.indexOf("Linux") > -1;
     }
-
 
     public static boolean isMacOs() {
         return OS_NAME.indexOf("Mac OS") > -1;
@@ -67,15 +65,25 @@ public class ClockAndPoem {
                 }
             }
 
+
             for (String item : data.split("\n")) {
-                if (!item.trim().equals("")) {
-                    db.push(item);
+
+                try {
+                    if (!item.trim().equals("")) {
+                        db.push(item);
+                    }
+                } catch (Exception e) {
+
                 }
+
             }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     static {
         initDB();
@@ -115,9 +123,11 @@ public class ClockAndPoem {
 
         private List<String> history = new ArrayList<>();
 
+        public List<String> source = new ArrayList<>();
 
         public void push(String item) {
             items.add(item);
+            authorData(item);
         }
 
         public void clearCache() {
@@ -146,9 +156,16 @@ public class ClockAndPoem {
 
         public String random() {
 
+            List<String> from = items;
+
+            if (source.size() > 0) {
+                from = source;
+                ;
+            }
+
             Random rand = new Random();
-            int index = 0 + rand.nextInt((items.size() - 1 - 0) + 1);
-            String poem = items.get(index);
+            int index = 0 + rand.nextInt((from.size() - 1 - 0) + 1);
+            String poem = from.get(index);
             addHistory(poem);
             return poem;
         }
@@ -165,13 +182,15 @@ public class ClockAndPoem {
             List<String> poems = Arrays.asList(poem.split(";"));
 
             if (poems.size() > CHUNK_SIZE) {
-
                 cache = chunkList(poems, CHUNK_SIZE);
-
                 return pop();
             }
 
             return poems;
+        }
+
+        private String getAuthor(List<String> poems) {
+            return poems.get(1).substring(0, poems.get(1).indexOf("《"));
         }
 
 
@@ -187,6 +206,9 @@ public class ClockAndPoem {
 
             List<String> poems = Arrays.asList(poem.split(";"));
 
+            String author = getAuthor(poems);
+            ClockAndPoem.author.add(author);
+
             if (poems.size() > CHUNK_SIZE) {
 
                 cache = chunkList(poems, CHUNK_SIZE);
@@ -196,6 +218,22 @@ public class ClockAndPoem {
 
             return poems;
         }
+
+
+        private void authorData(String poem) {
+            List<String> poems = Arrays.asList(poem.split(";"));
+
+            String author = getAuthor(poems);
+
+            List<String> list = authorPoems.get(author);
+            if (list == null) {
+                list = new ArrayList<>();
+                authorPoems.put(author, list);
+            }
+            list.add(poem);
+        }
+
+
     }
 
     static class CirclePanel extends JPanel {
@@ -257,12 +295,45 @@ public class ClockAndPoem {
         if (isMacOs()) {
         }
 
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem selectAuthor = new JMenuItem("选择");
+        JMenuItem reset = new JMenuItem("重置");
+
+        reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                db.source.clear();
+            }
+        });
+
+        selectAuthor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JDialog jDialog = new JDialog();
+                jDialog.setSize(600, 500);
+                jDialog.setLayout(new GridLayout(0, 6));
+                for (String item : author) {
+                    JToggleButton selectBtn = new JToggleButton(item);
+                    selectBtn.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            db.source = authorPoems.get(item);
+                        }
+                    });
+                    jDialog.add(selectBtn);
+                }
+                jDialog.setLocationRelativeTo(null);
+                jDialog.setVisible(true);
+            }
+        });
+        popupMenu.add(selectAuthor);
+        popupMenu.add(reset);
+
 
         JComponent content = Box.createVerticalBox();
 
 
         //clock
-
         MyDrawPanel drawPanel = new MyDrawPanel(Color.BLACK);
         drawPanel.setPreferredSize(new Dimension(200, 200));
         content.add(drawPanel);
@@ -276,6 +347,7 @@ public class ClockAndPoem {
         //poem
         JComponent poem = Box.createVerticalBox();
         content.add(poem);
+        poem.setComponentPopupMenu(popupMenu);
 
 
         poem.addMouseListener(new MouseAdapter() {
@@ -501,7 +573,7 @@ public class ClockAndPoem {
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0) {
 
-                refreshPoem(frame, drawPanel, hbox, poem, first,false);
+                refreshPoem(frame, drawPanel, hbox, poem, first, false);
             }
 
             if (endDate == null && !timeSettingLock[0]) {
@@ -606,12 +678,14 @@ public class ClockAndPoem {
                 if (j > 12)
                     j = j - 12;
                 g2d.setColor(Color.BLUE);
+                g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
                 g2d.drawString(Integer.toString(j), x, y);
             }
 
             AffineTransform old = g2d.getTransform();
 
             g2d.setColor(Color.BLACK);
+
 
             //时钟的60个刻度
             for (int i = 0; i < 60; i++) {
@@ -622,6 +696,7 @@ public class ClockAndPoem {
             //设置旋转重置
             g2d.setTransform(old);
 
+
             Calendar calendar = Calendar.getInstance();
             int hour = calendar.get(Calendar.HOUR_OF_DAY);
             int minute = calendar.get(Calendar.MINUTE);
@@ -631,7 +706,8 @@ public class ClockAndPoem {
             DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df2 = new SimpleDateFormat("E");
             //g2d.drawString(df1.format(calendar.getTime()), xCenter - 40, yCenter + 35);
-            //g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
+            g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
+
 
             // 画时钟的图形
             double hAngle = (hour - 12 + minute / 60d) * 360d / 12d;
@@ -642,6 +718,7 @@ public class ClockAndPoem {
             g2d.fillPolygon(xhArr, yhArr, xhArr.length);
             g2d.setTransform(old);
 
+
             // 画分钟的图形
             double mAngle = (minute + second / 60d) * 360d / 60d;
             g2d.rotate(Math.toRadians(mAngle), xCenter, yCenter);
@@ -651,11 +728,13 @@ public class ClockAndPoem {
             g2d.fillPolygon(xmArr, ymArr, xmArr.length);
             g2d.setTransform(old);
 
+
             // 画秒钟的图形
             double sAngle = second * 360d / 60d;
             g2d.rotate(Math.toRadians(sAngle), xCenter, yCenter);
             g2d.setColor(Color.RED);
             g2d.drawLine(xCenter, yCenter, xCenter, 35);
+
         }
     }
 
