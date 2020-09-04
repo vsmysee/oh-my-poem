@@ -34,6 +34,7 @@ public class ClockAndPoem {
     private static PoemStack db = new PoemStack();
 
     private static Set<String> author = new HashSet<>();
+    private static Set<String> selectAuthor = new HashSet<>();
 
     private static Map<String, List<String>> authorPoems = new HashMap<>();
 
@@ -190,7 +191,11 @@ public class ClockAndPoem {
         }
 
         private String getAuthor(List<String> poems) {
-            return poems.get(1).substring(0, poems.get(1).indexOf("《"));
+            String author = poems.get(1);
+            if (author.indexOf("《") == -1) {
+                return author;
+            }
+            return author.substring(0, author.indexOf("《"));
         }
 
 
@@ -296,17 +301,18 @@ public class ClockAndPoem {
         }
 
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem selectAuthor = new JMenuItem("选择");
+        JMenuItem select = new JMenuItem("选择");
         JMenuItem reset = new JMenuItem("重置");
 
         reset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                selectAuthor.clear();
                 db.source.clear();
             }
         });
 
-        selectAuthor.addActionListener(new ActionListener() {
+        select.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JDialog jDialog = new JDialog();
@@ -314,10 +320,14 @@ public class ClockAndPoem {
                 jDialog.setLayout(new GridLayout(0, 6));
                 for (String item : author) {
                     JToggleButton selectBtn = new JToggleButton(item);
+                    if (selectAuthor.contains(item)) {
+                        selectBtn.setSelected(true);
+                    }
                     selectBtn.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            db.source = authorPoems.get(item);
+                            selectAuthor.add(item);
+                            db.source.addAll(authorPoems.get(item));
                         }
                     });
                     jDialog.add(selectBtn);
@@ -326,7 +336,7 @@ public class ClockAndPoem {
                 jDialog.setVisible(true);
             }
         });
-        popupMenu.add(selectAuthor);
+        popupMenu.add(select);
         popupMenu.add(reset);
 
 
