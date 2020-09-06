@@ -26,8 +26,8 @@ public class ClockAndPoem {
     private static final String OS_VERSION = System.getProperty("os.version");
 
     private static final String FONT = "黑体";
-    private static final Integer FONT_SIZE_TITLE = 14;
-    private static final Integer FONT_SIZE_POEM = 18;
+    private static final Integer FONT_SIZE_TITLE = 16;
+    private static final Integer FONT_SIZE_POEM = 22;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
