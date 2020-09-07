@@ -36,6 +36,7 @@ public class ClockAndPoem {
     private static Set<String> author = new HashSet<>();
     private static Set<String> selectAuthor = new HashSet<>();
 
+
     private static Map<String, List<String>> authorPoems = new HashMap<>();
 
     public static boolean isWindows() {
@@ -88,6 +89,8 @@ public class ClockAndPoem {
 
     static {
         initDB();
+        authorPoems.put("短诗",db.shortPoem);
+        author.add("短诗");
     }
 
 
@@ -123,6 +126,8 @@ public class ClockAndPoem {
         private java.util.List<String> items = new ArrayList<>();
 
         private List<String> history = new ArrayList<>();
+
+        public List<String> shortPoem = new ArrayList<>();
 
         public List<String> source = new ArrayList<>();
 
@@ -161,7 +166,6 @@ public class ClockAndPoem {
 
             if (source.size() > 0) {
                 from = source;
-                ;
             }
 
             Random rand = new Random();
@@ -190,11 +194,17 @@ public class ClockAndPoem {
             return poems;
         }
 
-        private String getAuthor(List<String> poems) {
+        private String getAuthor(List<String> poems,String item) {
             String author = poems.get(1);
             if (author.indexOf("《") == -1) {
                 return author;
             }
+
+            int start = item.indexOf("》;");
+            if (item.substring(start).length() < 40) {
+                shortPoem.add(item);
+            }
+
             return author.substring(0, author.indexOf("《"));
         }
 
@@ -211,7 +221,7 @@ public class ClockAndPoem {
 
             List<String> poems = Arrays.asList(poem.split(";"));
 
-            String author = getAuthor(poems);
+            String author = getAuthor(poems,poem);
             ClockAndPoem.author.add(author);
 
             if (poems.size() > CHUNK_SIZE) {
@@ -228,7 +238,7 @@ public class ClockAndPoem {
         private void authorData(String poem) {
             List<String> poems = Arrays.asList(poem.split(";"));
 
-            String author = getAuthor(poems);
+            String author = getAuthor(poems,poem);
 
             List<String> list = authorPoems.get(author);
             if (list == null) {
