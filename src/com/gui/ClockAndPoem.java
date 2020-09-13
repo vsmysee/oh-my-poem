@@ -10,7 +10,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -30,6 +33,8 @@ public class ClockAndPoem {
     private static final Integer FONT_SIZE_POEM = 22;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
+
+    private static boolean mouseHover = false;
 
     private static PoemStack db = new PoemStack();
 
@@ -89,7 +94,7 @@ public class ClockAndPoem {
 
     static {
         initDB();
-        authorPoems.put("短诗",db.shortPoem);
+        authorPoems.put("短诗", db.shortPoem);
         author.add("短诗");
     }
 
@@ -194,7 +199,7 @@ public class ClockAndPoem {
             return poems;
         }
 
-        private String getAuthor(List<String> poems,String item) {
+        private String getAuthor(List<String> poems, String item) {
             String author = poems.get(1);
             if (author.indexOf("《") == -1) {
                 return author;
@@ -221,7 +226,7 @@ public class ClockAndPoem {
 
             List<String> poems = Arrays.asList(poem.split(";"));
 
-            String author = getAuthor(poems,poem);
+            String author = getAuthor(poems, poem);
             ClockAndPoem.author.add(author);
 
             if (poems.size() > CHUNK_SIZE) {
@@ -238,7 +243,7 @@ public class ClockAndPoem {
         private void authorData(String poem) {
             List<String> poems = Arrays.asList(poem.split(";"));
 
-            String author = getAuthor(poems,poem);
+            String author = getAuthor(poems, poem);
 
             List<String> list = authorPoems.get(author);
             if (list == null) {
@@ -371,6 +376,17 @@ public class ClockAndPoem {
 
 
         poem.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                mouseHover = true;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                mouseHover = false;
+            }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
@@ -591,7 +607,7 @@ public class ClockAndPoem {
 
             drawPanel.repaint();
 
-            if (timeRecorder > FREQ && timeRecorder % FREQ == 0) {
+            if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !mouseHover) {
 
                 refreshPoem(frame, drawPanel, hbox, poem, first, false);
             }
