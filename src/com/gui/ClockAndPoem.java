@@ -136,6 +136,8 @@ public class ClockAndPoem {
 
         public List<String> source = new ArrayList<>();
 
+        public List<String> current;
+
         public void push(String item) {
             items.add(item);
             authorData(item);
@@ -224,7 +226,7 @@ public class ClockAndPoem {
 
             String poem = random();
 
-            List<String> poems = Arrays.asList(poem.split(";"));
+            List<String> poems = current = Arrays.asList(poem.split(";"));
 
             String author = getAuthor(poems, poem);
             ClockAndPoem.author.add(author);
@@ -262,6 +264,12 @@ public class ClockAndPoem {
             setLayout(new GridLayout(0, 1));
             this.setPreferredSize(new Dimension(14, 20));
             add(new JLabel("<html><font color='white'>" + tag + "</font></html>"));
+        }
+
+        public CirclePanel(String tag, int width, int height) {
+            setLayout(new GridLayout(0, 1));
+            this.setPreferredSize(new Dimension(width, height));
+            add(new JLabel("<html><font color='white' size=5>" + tag + "</font></html>"));
         }
 
         @Override
@@ -375,29 +383,6 @@ public class ClockAndPoem {
         poem.setComponentPopupMenu(popupMenu);
 
 
-        poem.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                mouseHover = true;
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                mouseHover = false;
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int x = screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue();
-                    int y = screenSize.height - Double.valueOf(frame.getSize().getHeight()).intValue();
-                    frame.setLocation(x, y);
-                    frame.revalidate();
-                }
-            }
-        });
-
         List<String> pop = db.pop();
 
         JPanel first = new JPanel();
@@ -419,6 +404,27 @@ public class ClockAndPoem {
             poem.add(jPanel);
         }
 
+
+        poem.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                mouseHover = true;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                mouseHover = false;
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                if (e.getClickCount() == 2) {
+                    new ZoomDialog(db.current);
+                }
+            }
+        });
 
         SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss");
         JPanel bottomPanel = new JPanel();
@@ -463,6 +469,9 @@ public class ClockAndPoem {
         content.getInputMap().put(KeyStroke.getKeyStroke("LEFT"),
                 "lastPoem");
 
+        content.getInputMap().put(KeyStroke.getKeyStroke("ENTER"),
+                "openPoem");
+
 
         content.getActionMap().put("refreshPoem",
                 new AbstractAction() {
@@ -475,6 +484,13 @@ public class ClockAndPoem {
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         refreshPoem(frame, drawPanel, hbox, poem, first, true);
+                    }
+                });
+
+        content.getActionMap().put("openPoem",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        new ZoomDialog(db.current);
                     }
                 });
 
