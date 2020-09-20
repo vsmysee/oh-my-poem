@@ -41,6 +41,7 @@ public class ClockAndPoem {
     private static Set<String> author = new HashSet<>();
     private static Set<String> selectAuthor = new HashSet<>();
 
+    private static ZoomDialog zoomDialog;
 
     private static Map<String, List<String>> authorPoems = new HashMap<>();
 
@@ -191,7 +192,8 @@ public class ClockAndPoem {
                 return pop();
             }
 
-            List<String> poems = Arrays.asList(poem.split(";"));
+            List<String> poems = current = Arrays.asList(poem.split(";"));
+
 
             if (poems.size() > CHUNK_SIZE) {
                 cache = chunkList(poems, CHUNK_SIZE);
@@ -421,7 +423,12 @@ public class ClockAndPoem {
             public void mouseClicked(MouseEvent e) {
 
                 if (e.getClickCount() == 2) {
-                    new ZoomDialog(db.current);
+                    if (zoomDialog == null) {
+                        zoomDialog = new ZoomDialog(db.current);
+                    } else {
+                        zoomDialog.dispose();
+                        zoomDialog = new ZoomDialog(db.current);
+                    }
                 }
             }
         });
@@ -477,6 +484,10 @@ public class ClockAndPoem {
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         refreshPoem(frame, drawPanel, hbox, poem, first, false);
+                        if (zoomDialog != null && zoomDialog.isVisible()) {
+                            zoomDialog.dispose();
+                            zoomDialog = new ZoomDialog(db.current);
+                        }
                     }
                 });
 
@@ -484,6 +495,11 @@ public class ClockAndPoem {
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         refreshPoem(frame, drawPanel, hbox, poem, first, true);
+                        if (zoomDialog != null && zoomDialog.isVisible()) {
+                            zoomDialog.dispose();
+                            zoomDialog = new ZoomDialog(db.current);
+                        }
+
                     }
                 });
 
@@ -626,6 +642,12 @@ public class ClockAndPoem {
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !mouseHover) {
 
                 refreshPoem(frame, drawPanel, hbox, poem, first, false);
+
+                if (zoomDialog != null && zoomDialog.isVisible()) {
+                    zoomDialog.dispose();
+                    zoomDialog = new ZoomDialog(db.current);
+                }
+
             }
 
             if (endDate == null && !timeSettingLock[0]) {

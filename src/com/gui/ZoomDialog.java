@@ -19,6 +19,7 @@ public class ZoomDialog extends JDialog {
 
         setDefaultCloseOperation(2);
 
+        setAutoRequestFocus(false);
 
         getRootPane().registerKeyboardAction(new ActionListener() {
                                                  @Override
