@@ -36,7 +36,7 @@ public class ClockAndPoem {
 
     private static boolean mouseHover = false;
 
-    private static PoemStack db = new PoemStack();
+    public static PoemStack db = new PoemStack();
 
     private static Set<String> author = new HashSet<>();
     private static Set<String> selectAuthor = new HashSet<>();
@@ -315,9 +315,17 @@ public class ClockAndPoem {
         return list;
     }
 
+    private JFrame frame;
+    private MyDrawPanel drawPanel;
+
+    private Box colorBar;
+    private JComponent poem;
+    private JPanel nextStatus;
+
+
     public void show() {
 
-        JFrame frame = new JFrame();
+        frame = new JFrame();
         if (isWindows()) {
             frame.setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
         }
@@ -369,28 +377,28 @@ public class ClockAndPoem {
 
 
         //clock
-        MyDrawPanel drawPanel = new MyDrawPanel(Color.BLACK);
+        drawPanel = new MyDrawPanel(Color.BLACK);
         drawPanel.setPreferredSize(new Dimension(200, 200));
         content.add(drawPanel);
 
 
         //color bar
-        Box hbox = Box.createHorizontalBox();
-        content.add(hbox);
+        colorBar = Box.createHorizontalBox();
+        content.add(colorBar);
 
 
         //poem
-        JComponent poem = Box.createVerticalBox();
+        poem = Box.createVerticalBox();
         content.add(poem);
         poem.setComponentPopupMenu(popupMenu);
 
 
         List<String> pop = db.pop();
 
-        JPanel first = new JPanel();
-        first.setBackground(Color.RED);
-        first.setPreferredSize(new Dimension(-1, 1));
-        hbox.add(first);
+        nextStatus = new JPanel();
+        nextStatus.setBackground(Color.RED);
+        nextStatus.setPreferredSize(new Dimension(-1, 1));
+        colorBar.add(nextStatus);
 
         if (db.cacheSize() > 0) {
 
@@ -398,7 +406,7 @@ public class ClockAndPoem {
                 JPanel rest = new JPanel();
                 rest.setBackground(Color.BLACK);
                 rest.setPreferredSize(new Dimension(-1, 1));
-                hbox.add(rest);
+                colorBar.add(rest);
             }
         }
         java.util.List<JPanel> jPanels = buildPoemItem(pop);
@@ -424,10 +432,9 @@ public class ClockAndPoem {
 
                 if (e.getClickCount() == 2) {
                     if (zoomDialog == null) {
-                        zoomDialog = new ZoomDialog(db.current);
+                        zoomDialog = new ZoomDialog(db.current, ClockAndPoem.this);
                     } else {
-                        zoomDialog.dispose();
-                        zoomDialog = new ZoomDialog(db.current);
+                        zoomDialog.refresh(db.current);
                     }
                 }
             }
@@ -483,22 +490,15 @@ public class ClockAndPoem {
         content.getActionMap().put("refreshPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        refreshPoem(frame, drawPanel, hbox, poem, first, false);
-                        if (zoomDialog != null && zoomDialog.isVisible()) {
-                            zoomDialog.dispose();
-                            zoomDialog = new ZoomDialog(db.current);
-                        }
+                        refreshPoem(false, false);
+
                     }
                 });
 
         content.getActionMap().put("lastPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        refreshPoem(frame, drawPanel, hbox, poem, first, true);
-                        if (zoomDialog != null && zoomDialog.isVisible()) {
-                            zoomDialog.dispose();
-                            zoomDialog = new ZoomDialog(db.current);
-                        }
+                        refreshPoem(true, false);
 
                     }
                 });
@@ -506,7 +506,7 @@ public class ClockAndPoem {
         content.getActionMap().put("openPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        new ZoomDialog(db.current);
+                        new ZoomDialog(db.current, ClockAndPoem.this);
                     }
                 });
 
@@ -641,11 +641,10 @@ public class ClockAndPoem {
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !mouseHover) {
 
-                refreshPoem(frame, drawPanel, hbox, poem, first, false);
+                refreshPoem(false, false);
 
-                if (zoomDialog != null && zoomDialog.isVisible()) {
-                    zoomDialog.dispose();
-                    zoomDialog = new ZoomDialog(db.current);
+                if (zoomDialog != null) {
+                    zoomDialog.refresh(db.current);
                 }
 
             }
@@ -674,13 +673,38 @@ public class ClockAndPoem {
         }
     }
 
-    private void refreshPoem(JFrame frame, MyDrawPanel drawPanel, Box hbox, JComponent poem, JPanel first, boolean history) {
+
+    public void hidePoem() {
+        poem.setVisible(false);
+        colorBar.setVisible(false);
+        frame.pack();
+    }
+
+    public void showPoem() {
+        poem.setVisible(true);
+        colorBar.setVisible(true);
+        frame.pack();
+    }
+
+    public void clearZoom() {
+        zoomDialog = null;
+    }
+
+
+    public void refreshPoem(boolean history, boolean onlyPop) {
+
+        List<String> items = history ? db.popHistory() : db.pop();
+
+        if (onlyPop) {
+            return;
+        }
+
         poem.removeAll();
 
-        List<JPanel> poemItems = buildPoemItem(history ? db.popHistory() : db.pop());
+        List<JPanel> poemItems = buildPoemItem(items);
 
-        hbox.removeAll();
-        hbox.add(first);
+        colorBar.removeAll();
+        colorBar.add(nextStatus);
 
         if (db.cacheSize() > 0) {
 
@@ -688,7 +712,7 @@ public class ClockAndPoem {
                 JPanel rest = new JPanel();
                 rest.setBackground(Color.BLACK);
                 rest.setPreferredSize(new Dimension(-1, 1));
-                hbox.add(rest);
+                colorBar.add(rest);
             }
         }
 
@@ -700,6 +724,7 @@ public class ClockAndPoem {
 
         poem.updateUI();
         frame.pack();
+
         int x = Double.valueOf(frame.getSize().getWidth()).intValue();
         if (frame.getLocation().x == 0) {
             frame.setLocation(0, 0);
