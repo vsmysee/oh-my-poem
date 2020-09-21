@@ -3,20 +3,23 @@ package com.gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ZoomDialog extends JDialog {
 
     private static final String FONT = "黑体";
 
-    private static final int titleSize = 40;
+    private static final int titleSize = 25;
 
-    private static final int bodySize = 50;
+    private static final int bodySize = 35;
 
 
     private ClockAndPoem clockAndPoem;
 
     private JComponent poem;
+
+    private List<JPanel> poemLabels = new ArrayList<>();
 
 
     public ZoomDialog(List<String> poems, ClockAndPoem clockAndPoem) {
@@ -42,7 +45,8 @@ public class ZoomDialog extends JDialog {
         add(poem);
         pack();
 
-        setLocationRelativeTo(null);
+        resetPosition(poems, poem);
+
         setVisible(true);
 
         addWindowListener(new WindowAdapter() {
@@ -81,15 +85,51 @@ public class ZoomDialog extends JDialog {
 
     }
 
+    private void resetPosition(List<String> poems, JComponent poem) {
+        if (poems.size() > 10) {
+            setLocation(ClockAndPoem.screenSize.width / 2 - (getWidth() / 2), 20);
+        } else {
+            setLocationRelativeTo(null);
+        }
+
+        if (getHeight() > ClockAndPoem.screenSize.height - 20) {
+
+            Timer timer = new Timer(500, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    for (Component component : poemLabels) {
+
+                        int x = component.getLocation().x;
+                        int y = component.getLocation().y;
+
+                        component.setLocation(x, y - 5);
+                        component.repaint();
+                    }
+
+                }
+            });
+
+            timer.start();
+
+        }
+
+    }
+
 
     public void refresh(List<String> poems) {
 
         remove(poem);
 
+        poemLabels.clear();
+
         poem = poem(poems);
         add(poem);
 
         pack();
+
+        resetPosition(poems, poem);
+
 
     }
 
@@ -184,13 +224,14 @@ public class ZoomDialog extends JDialog {
 
             poem.add(panel);
 
+            poemLabels.add(panel);
+
         }
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.add(new ClockAndPoem.CirclePanel(poems.get(0), 20, 25));
 
         poem.add(bottom);
-
         return poem;
     }
 

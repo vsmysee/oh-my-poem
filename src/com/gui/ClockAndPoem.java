@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class ClockAndPoem {
 
-    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_VERSION = System.getProperty("os.version");
