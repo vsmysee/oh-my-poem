@@ -491,7 +491,6 @@ public class ClockAndPoem {
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         refreshPoem(false, false);
-
                     }
                 });
 
@@ -499,7 +498,6 @@ public class ClockAndPoem {
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
                         refreshPoem(true, false);
-
                     }
                 });
 

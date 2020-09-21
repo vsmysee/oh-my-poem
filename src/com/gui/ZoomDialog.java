@@ -53,6 +53,32 @@ public class ZoomDialog extends JDialog {
             }
         });
 
+        getRootPane().getInputMap().put(KeyStroke.getKeyStroke("RIGHT"),
+                "nextPoem");
+
+        getRootPane().getInputMap().put(KeyStroke.getKeyStroke("LEFT"),
+                "lastPoem");
+
+
+        getRootPane().getActionMap().put("nextPoem",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        clockAndPoem.refreshPoem(false, true);
+                        refresh(clockAndPoem.db.current);
+
+                    }
+                });
+
+        getRootPane().getActionMap().put("lastPoem",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        clockAndPoem.refreshPoem(true, true);
+                        refresh(clockAndPoem.db.current);
+
+                    }
+                });
+
+
     }
 
 
