@@ -21,6 +21,8 @@ public class ZoomDialog extends JDialog {
 
     private List<JPanel> poemLabels = new ArrayList<>();
 
+    private Timer timer;
+
 
     public ZoomDialog(List<String> poems, ClockAndPoem clockAndPoem) {
 
@@ -83,6 +85,15 @@ public class ZoomDialog extends JDialog {
                 });
 
 
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                prev.setVisible(true);
+                next.setVisible(true);
+            }
+
+        });
+
     }
 
     private void resetPosition(List<String> poems, JComponent poem) {
@@ -94,21 +105,23 @@ public class ZoomDialog extends JDialog {
 
         if (getHeight() > ClockAndPoem.screenSize.height - 20) {
 
-            Timer timer = new Timer(500, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
+            if (timer == null) {
+                timer = new Timer(500, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
 
-                    for (Component component : poemLabels) {
+                        for (Component component : poemLabels) {
 
-                        int x = component.getLocation().x;
-                        int y = component.getLocation().y;
+                            int x = component.getLocation().x;
+                            int y = component.getLocation().y;
 
-                        component.setLocation(x, y - 5);
-                        component.repaint();
+                            component.setLocation(x, y - 5);
+                            component.repaint();
+                        }
+
                     }
-
-                }
-            });
+                });
+            }
 
             timer.start();
 
@@ -118,6 +131,10 @@ public class ZoomDialog extends JDialog {
 
 
     public void refresh(List<String> poems) {
+
+        if (timer != null) {
+            timer.stop();
+        }
 
         remove(poem);
 
@@ -129,8 +146,6 @@ public class ZoomDialog extends JDialog {
         pack();
 
         resetPosition(poems, poem);
-
-
     }
 
 
@@ -140,10 +155,15 @@ public class ZoomDialog extends JDialog {
         return item;
     }
 
+    private JLabel prev;
+    private JLabel next;
+
     private JComponent title(List<String> poems) {
 
         Box horizontalBox = Box.createHorizontalBox();
-        JLabel prev = new JLabel(new ImageIcon(getClass().getResource("/images/prev.png")));
+
+
+        prev = new JLabel(new ImageIcon(getClass().getResource("/images/prev.png")));
         prev.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -156,6 +176,7 @@ public class ZoomDialog extends JDialog {
                 refresh(clockAndPoem.db.current);
             }
         });
+        prev.setVisible(false);
         horizontalBox.add(prev);
 
         horizontalBox.add(Box.createHorizontalGlue());
@@ -168,7 +189,7 @@ public class ZoomDialog extends JDialog {
         horizontalBox.add(title);
 
         horizontalBox.add(Box.createHorizontalGlue());
-        JLabel next = new JLabel(new ImageIcon(getClass().getResource("/images/next.png")));
+        next = new JLabel(new ImageIcon(getClass().getResource("/images/next.png")));
         next.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -181,6 +202,7 @@ public class ZoomDialog extends JDialog {
                 refresh(clockAndPoem.db.current);
             }
         });
+        next.setVisible(false);
         horizontalBox.add(next);
 
         title.add(comp);
@@ -189,14 +211,15 @@ public class ZoomDialog extends JDialog {
 
 
     private JComponent poem(List<String> poems) {
-        JComponent poem = Box.createVerticalBox();
+        JComponent poemRoot = Box.createVerticalBox();
 
-        poem.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
 
-        poem.add(title(poems));
+        poemRoot.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
 
-        poem.add(new JSeparator());
-        poem.add(Box.createVerticalStrut(10));
+        poemRoot.add(title(poems));
+
+        poemRoot.add(new JSeparator());
+        poemRoot.add(Box.createVerticalStrut(10));
 
         int index = 2;
 
@@ -205,7 +228,6 @@ public class ZoomDialog extends JDialog {
             JPanel panel = new JPanel();
 
             String left = poems.get(index).trim();
-
             panel.add(buildJLabel(left, bodySize));
 
             if ((index + 1) < poems.size()) {
@@ -222,17 +244,26 @@ public class ZoomDialog extends JDialog {
 
             index++;
 
-            poem.add(panel);
-
             poemLabels.add(panel);
 
         }
 
+        Box poemContent = Box.createVerticalBox();
+        for (JPanel poemLabel : poemLabels) {
+            poemContent.add(poemLabel);
+        }
+
+        poemRoot.add(poemContent);
+
+
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.add(new ClockAndPoem.CirclePanel(poems.get(0), 20, 25));
+        poemRoot.add(bottom);
 
-        poem.add(bottom);
-        return poem;
+
+        poemLabels.add(bottom);
+
+        return poemRoot;
     }
 
 }
