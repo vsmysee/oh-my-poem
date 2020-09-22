@@ -34,7 +34,7 @@ public class ClockAndPoem {
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
-    private static boolean mouseHover = false;
+    public  boolean stopAutoRefresh = true;
 
     public static PoemStack db = new PoemStack();
 
@@ -193,7 +193,6 @@ public class ClockAndPoem {
             }
 
             List<String> poems = current = Arrays.asList(poem.split(";"));
-
 
             if (poems.size() > CHUNK_SIZE) {
                 cache = chunkList(poems, CHUNK_SIZE);
@@ -419,12 +418,15 @@ public class ClockAndPoem {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                mouseHover = true;
+                stopAutoRefresh = true;
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                mouseHover = false;
+                stopAutoRefresh = false;
+                if (!poem.isVisible()) {
+                    stopAutoRefresh = true;
+                }
             }
 
             @Override
@@ -637,7 +639,7 @@ public class ClockAndPoem {
 
             drawPanel.repaint();
 
-            if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !mouseHover) {
+            if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !stopAutoRefresh) {
 
                 refreshPoem(false, false);
 
@@ -663,11 +665,14 @@ public class ClockAndPoem {
                 endDate = null;
             }
 
+
             try {
                 Thread.sleep(1000);
                 timeRecorder++;
             } catch (Exception ex) {
+                ex.printStackTrace();
             }
+
         }
     }
 
@@ -676,12 +681,18 @@ public class ClockAndPoem {
         poem.setVisible(false);
         colorBar.setVisible(false);
         frame.pack();
+
+        stopAutoRefresh = true;
+
     }
 
     public void showPoem() {
         poem.setVisible(true);
         colorBar.setVisible(true);
         frame.pack();
+
+        stopAutoRefresh = false;
+
     }
 
     public void clearZoom() {
