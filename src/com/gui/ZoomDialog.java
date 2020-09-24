@@ -8,8 +8,6 @@ import java.util.List;
 
 public class ZoomDialog extends JDialog {
 
-    private static final String FONT = "黑体";
-
     private static final int titleSize = 25;
 
     private static final int bodySize = 35;
@@ -98,7 +96,7 @@ public class ZoomDialog extends JDialog {
 
     private void resetPosition(List<String> poems, JComponent poem) {
         if (poems.size() > 10) {
-            setLocation(ClockAndPoem.screenSize.width / 2 - (getWidth() / 2), 20);
+            setLocation(ClockAndPoem.screenSize.width / 2 - (getWidth() / 2), (ClockAndPoem.screenSize.height - getHeight()) / 2);
         } else {
             setLocationRelativeTo(null);
         }
@@ -151,7 +149,7 @@ public class ZoomDialog extends JDialog {
 
     private JLabel buildJLabel(String text, int size) {
         JLabel item = new JLabel(text);
-        item.setFont(new Font(FONT, Font.BOLD, size));
+        item.setFont(new Font(Setting.FONT, Font.BOLD, size));
         return item;
     }
 
