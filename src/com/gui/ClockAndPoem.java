@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 public class ClockAndPoem {
 
+    private static final String NAME = "/data/poem.txt";
+
     public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     private static final String OS_NAME = System.getProperty("os.name");
@@ -64,7 +66,7 @@ public class ClockAndPoem {
         try {
 
             String data = "";
-            try (InputStream is = ClockAndPoem.class.getResourceAsStream("/data/poem.txt")) {
+            try (InputStream is = ClockAndPoem.class.getResourceAsStream(NAME)) {
                 try (InputStreamReader isr = new InputStreamReader(is, "UTF-8");
                      BufferedReader reader = new BufferedReader(isr)) {
                     data = reader.lines().collect(Collectors.joining(System.lineSeparator()));
@@ -540,7 +542,13 @@ public class ClockAndPoem {
         content.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"),
                 "refreshPoem");
 
+        content.getInputMap().put(KeyStroke.getKeyStroke("DOWN"),
+                "refreshPoem");
+
         content.getInputMap().put(KeyStroke.getKeyStroke("LEFT"),
+                "lastPoem");
+
+        content.getInputMap().put(KeyStroke.getKeyStroke("UP"),
                 "lastPoem");
 
         content.getInputMap().put(KeyStroke.getKeyStroke("ENTER"),
