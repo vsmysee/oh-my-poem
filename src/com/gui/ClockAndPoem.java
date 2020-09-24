@@ -5,10 +5,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,13 +25,12 @@ public class ClockAndPoem {
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_VERSION = System.getProperty("os.version");
 
-    private static final String FONT = "黑体";
     private static final Integer FONT_SIZE_TITLE = 16;
     private static final Integer FONT_SIZE_POEM = 22;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
-    public  boolean stopAutoRefresh = true;
+    public boolean stopAutoRefresh = true;
 
     public static PoemStack db = new PoemStack();
 
@@ -44,6 +40,8 @@ public class ClockAndPoem {
     private static ZoomDialog zoomDialog;
 
     private static Map<String, List<String>> authorPoems = new HashMap<>();
+
+    private static List<String> FONTS = new ArrayList<>();
 
     public static boolean isWindows() {
         return OS_NAME.indexOf("Windows") > -1;
@@ -92,9 +90,24 @@ public class ClockAndPoem {
         }
     }
 
+    private static void fontList() {
+
+        String fonts[] =
+                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+
+        for (int i = 0; i < fonts.length; i++) {
+
+            if (fonts[i].matches("[\\u4E00-\\u9FA5]+")) {
+                FONTS.add(fonts[i]);
+            }
+        }
+
+    }
+
 
     static {
         initDB();
+        fontList();
         authorPoems.put("短诗", db.shortPoem);
         author.add("短诗");
     }
@@ -179,7 +192,7 @@ public class ClockAndPoem {
             Random rand = new Random();
             int index = 0 + rand.nextInt((from.size() - 1 - 0) + 1);
             String poem = from.get(index);
-            addHistory(poem);
+
             return poem;
         }
 
@@ -216,6 +229,19 @@ public class ClockAndPoem {
             return author.substring(0, author.indexOf("《"));
         }
 
+        public List<String> popRandom() {
+
+            String poem = random();
+            addHistory(poem);
+
+            List<String> poems = current = Arrays.asList(poem.split(";"));
+
+            String author = getAuthor(poems, poem);
+            ClockAndPoem.author.add(author);
+
+            return poems;
+        }
+
 
         public List<String> pop() {
 
@@ -226,6 +252,7 @@ public class ClockAndPoem {
             }
 
             String poem = random();
+            addHistory(poem);
 
             List<String> poems = current = Arrays.asList(poem.split(";"));
 
@@ -296,7 +323,7 @@ public class ClockAndPoem {
 
 
             JLabel poemItem = new JLabel(text);
-            poemItem.setFont(new Font(FONT, Font.BOLD, title ? FONT_SIZE_TITLE : FONT_SIZE_POEM));
+            poemItem.setFont(new Font(Setting.FONT, Font.BOLD, title ? FONT_SIZE_TITLE : FONT_SIZE_POEM));
             if (title) {
 
                 //add ico
@@ -304,7 +331,6 @@ public class ClockAndPoem {
 
                 poemItem.setText("<html><font color='blue'>" + poemItem.getText() + "</font></html>");
             }
-
 
             panel.add(poemItem);
 
@@ -335,12 +361,33 @@ public class ClockAndPoem {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem select = new JMenuItem("选择");
         JMenuItem reset = new JMenuItem("重置");
+        JMenuItem fonts = new JMenuItem("字体");
 
         reset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectAuthor.clear();
                 db.source.clear();
+            }
+        });
+
+        fonts.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JDialog jDialog = new JDialog();
+                JComboBox<String> comp = new JComboBox<String>(FONTS.toArray(new String[]{}));
+                jDialog.add(comp);
+                comp.addItemListener(new ItemListener() {
+                    @Override
+                    public void itemStateChanged(ItemEvent e) {
+                        Object selectedItem = comp.getSelectedItem();
+                        Setting.FONT = selectedItem.toString();
+                        jDialog.dispose();
+                    }
+                });
+                jDialog.pack();
+                jDialog.setLocationRelativeTo(null);
+                jDialog.setVisible(true);
             }
         });
 
@@ -370,6 +417,7 @@ public class ClockAndPoem {
         });
         popupMenu.add(select);
         popupMenu.add(reset);
+        popupMenu.add(fonts);
 
 
         JComponent content = Box.createVerticalBox();
@@ -471,6 +519,16 @@ public class ClockAndPoem {
 
 
         frame.add(content);
+
+        ActionListener anAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        };
+        frame.getRootPane().registerKeyboardAction(anAction,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         frame.pack();
         frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
@@ -691,6 +749,8 @@ public class ClockAndPoem {
         colorBar.setVisible(true);
         frame.pack();
 
+        frame.requestFocus();
+
         stopAutoRefresh = false;
 
     }
@@ -702,7 +762,7 @@ public class ClockAndPoem {
 
     public void refreshPoem(boolean history, boolean onlyPop) {
 
-        List<String> items = history ? db.popHistory() : db.pop();
+        List<String> items = history ? db.popHistory() : onlyPop ? db.popRandom() : db.pop();
 
         if (onlyPop) {
             return;
@@ -810,14 +870,11 @@ public class ClockAndPoem {
             int minute = calendar.get(Calendar.MINUTE);
             int second = calendar.get(Calendar.SECOND);
 
-            //画日期和星期
             DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
             DateFormat df2 = new SimpleDateFormat("E");
-            //g2d.drawString(df1.format(calendar.getTime()), xCenter - 40, yCenter + 35);
             g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
 
 
-            // 画时钟的图形
             double hAngle = (hour - 12 + minute / 60d) * 360d / 12d;
             g2d.rotate(Math.toRadians(hAngle), xCenter, yCenter);
             int xhArr[] = {xCenter, xCenter + 9, xCenter, xCenter - 9};
@@ -827,7 +884,6 @@ public class ClockAndPoem {
             g2d.setTransform(old);
 
 
-            // 画分钟的图形
             double mAngle = (minute + second / 60d) * 360d / 60d;
             g2d.rotate(Math.toRadians(mAngle), xCenter, yCenter);
             int xmArr[] = {xCenter, xCenter + 6, xCenter, xCenter - 6};
@@ -837,7 +893,6 @@ public class ClockAndPoem {
             g2d.setTransform(old);
 
 
-            // 画秒钟的图形
             double sAngle = second * 360d / 60d;
             g2d.rotate(Math.toRadians(sAngle), xCenter, yCenter);
             g2d.setColor(Color.RED);
