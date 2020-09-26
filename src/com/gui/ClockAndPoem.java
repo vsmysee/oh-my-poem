@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class ClockAndPoem {
 
-    private static final String NAME = "/data/poem.txt";
+    private static final String NAME = "/data/one.txt";
 
     public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
