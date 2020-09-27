@@ -32,7 +32,7 @@ public class ClockAndPoem {
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
-    public boolean stopAutoRefresh = true;
+    public boolean stopAutoRefresh = false;
 
     public static PoemStack db = new PoemStack();
 
