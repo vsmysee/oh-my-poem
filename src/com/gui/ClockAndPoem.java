@@ -747,20 +747,14 @@ public class ClockAndPoem {
         poem.setVisible(false);
         colorBar.setVisible(false);
         frame.pack();
-
         stopAutoRefresh = true;
-
     }
 
     public void showPoem() {
         poem.setVisible(true);
         colorBar.setVisible(true);
         frame.pack();
-
-        frame.requestFocus();
-
         stopAutoRefresh = false;
-
     }
 
     public void clearZoom() {
