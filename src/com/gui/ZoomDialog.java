@@ -144,7 +144,7 @@ public class ZoomDialog extends JDialog {
             setLocationRelativeTo(null);
         }
 
-        if (getHeight() > ClockAndPoem.screenSize.height - 20) {
+        if (getHeight() > ClockAndPoem.screenSize.height - 30) {
 
             if (timer == null) {
                 timer = new Timer(500, new ActionListener() {
