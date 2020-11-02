@@ -6,12 +6,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -343,10 +341,9 @@ public class ClockAndPoem {
     }
 
     private JFrame frame;
-    private MyDrawPanel drawPanel;
 
     private Box colorBar;
-    private JComponent poem;
+    private JComponent poemContainer;
     private JPanel nextStatus;
 
 
@@ -424,47 +421,40 @@ public class ClockAndPoem {
 
         JComponent content = Box.createVerticalBox();
 
-
-        //clock
-        drawPanel = new MyDrawPanel(Color.BLACK);
-        drawPanel.setPreferredSize(new Dimension(200, 200));
-        content.add(drawPanel);
-
-
         //color bar
         colorBar = Box.createHorizontalBox();
-        content.add(colorBar);
 
 
         //poem
-        poem = Box.createVerticalBox();
-        content.add(poem);
-        poem.setComponentPopupMenu(popupMenu);
+        poemContainer = Box.createVerticalBox();
+        content.add(poemContainer);
+        poemContainer.setComponentPopupMenu(popupMenu);
 
+        content.add(colorBar);
 
         List<String> pop = db.pop();
 
         nextStatus = new JPanel();
-        nextStatus.setBackground(Color.RED);
-        nextStatus.setPreferredSize(new Dimension(-1, 1));
+        nextStatus.setBackground(Color.BLUE);
+        nextStatus.setPreferredSize(new Dimension(-1, 2));
         colorBar.add(nextStatus);
 
         if (db.cacheSize() > 0) {
 
             for (int i = 0; i < db.cacheSize(); i++) {
                 JPanel rest = new JPanel();
-                rest.setBackground(Color.BLACK);
-                rest.setPreferredSize(new Dimension(-1, 1));
+                rest.setBackground(Color.RED);
+                rest.setPreferredSize(new Dimension(-1, 2));
                 colorBar.add(rest);
             }
         }
         java.util.List<JPanel> jPanels = buildPoemItem(pop);
         for (JPanel jPanel : jPanels) {
-            poem.add(jPanel);
+            poemContainer.add(jPanel);
         }
 
 
-        poem.addMouseListener(new MouseAdapter() {
+        poemContainer.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -474,7 +464,7 @@ public class ClockAndPoem {
             @Override
             public void mouseExited(MouseEvent e) {
                 stopAutoRefresh = false;
-                if (!poem.isVisible()) {
+                if (!poemContainer.isVisible()) {
                     stopAutoRefresh = true;
                 }
             }
@@ -612,9 +602,10 @@ public class ClockAndPoem {
 
                 long end = System.currentTimeMillis() + selectTime[0] * 60 * 1000;
                 endDate = new Date(end);
-                drawPanel.color = Color.BLACK;
                 timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
                 timeLabel.setText("<html><font color='rgb(200,200,200)'>剩余" + (end - System.currentTimeMillis()) + "毫秒</font></html>");
+
+                frame.pack();
             }
         });
 
@@ -627,6 +618,8 @@ public class ClockAndPoem {
                     confirmPanel.setVisible(false);
                     timeSettingLock[0] = false;
                     timeLabel.setText(sf.format(new Date()));
+                    frame.pack();
+
                     return;
                 }
             }
@@ -651,6 +644,8 @@ public class ClockAndPoem {
                     }
                 });
 
+                frame.pack();
+
             }
         });
 
@@ -671,39 +666,11 @@ public class ClockAndPoem {
 
         endTimer.start();
 
-        drawPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                if (e.getClickCount() == 2) {
-                    Point location = frame.getLocation();
-                    if (location.x > screenSize.getWidth() / 2) {
-                        frame.setLocation(0, 0);
-                        frame.revalidate();
-                    } else {
-                        frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
-                        frame.revalidate();
-                    }
-                }
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                moveTimer.stop();
-                frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
-                frame.pack();
-                drawPanel.color = Color.BLACK;
-                bottomPanel.setBackground(null);
-                frame.revalidate();
-            }
-        });
-
 
         long timeRecorder = 0;
 
         while (true) {
 
-            drawPanel.repaint();
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !stopAutoRefresh) {
 
@@ -727,7 +694,6 @@ public class ClockAndPoem {
                 if (!moveTimer.isRunning()) {
                     moveTimer.start();
                 }
-                drawPanel.color = Color.RED;
                 endDate = null;
             }
 
@@ -744,14 +710,14 @@ public class ClockAndPoem {
 
 
     public void hidePoem() {
-        poem.setVisible(false);
+        poemContainer.setVisible(false);
         colorBar.setVisible(false);
         frame.pack();
         stopAutoRefresh = true;
     }
 
     public void showPoem() {
-        poem.setVisible(true);
+        poemContainer.setVisible(true);
         colorBar.setVisible(true);
         frame.pack();
         stopAutoRefresh = false;
@@ -770,7 +736,7 @@ public class ClockAndPoem {
             return;
         }
 
-        poem.removeAll();
+        poemContainer.removeAll();
 
         List<JPanel> poemItems = buildPoemItem(items);
 
@@ -787,13 +753,12 @@ public class ClockAndPoem {
             }
         }
 
-        drawPanel.setVisible(true);
 
         for (JPanel jPanel : poemItems) {
-            poem.add(jPanel);
+            poemContainer.add(jPanel);
         }
 
-        poem.updateUI();
+        poemContainer.updateUI();
         frame.pack();
 
         int x = Double.valueOf(frame.getSize().getWidth()).intValue();
@@ -801,105 +766,6 @@ public class ClockAndPoem {
             frame.setLocation(0, 0);
         } else {
             frame.setLocation(screenSize.width - x, 0);
-        }
-    }
-
-    class MyDrawPanel extends JPanel {
-
-        private Color color;
-
-        public MyDrawPanel(Color color) {
-            this.color = color;
-        }
-
-        public void paintComponent(Graphics g) {
-
-            Graphics2D g2d = (Graphics2D) g;
-
-            //去锯齿
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            //清空原来的图形
-            g2d.setColor(Color.WHITE);
-            g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-            g2d.setColor(color);
-
-            //圆中心坐标
-            int xCenter = this.getWidth() / 2;
-            int yCenter = this.getHeight() / 2;
-            // 计算半径
-            int radius = (int) (this.getHeight() * 0.8 * 0.5);
-            // 画圆
-            g2d.drawOval(xCenter - radius, yCenter - radius, radius * 2, radius * 2);
-
-            g2d.drawOval(xCenter - 10, yCenter - 10, 20, 20);
-            g2d.fillOval(xCenter - 10, yCenter - 10, 20, 20);
-
-
-            //画时钟的12个数字(如果用rotate方法则数字会倾斜倒立)
-            for (int i = 0; i < 12; i++) {
-
-                double dd = Math.PI / 180 * i * (360 / 12); //每次转360/12度
-                int x = (xCenter - 4) + (int) ((radius - 12) * Math.cos(dd));
-                int y = (yCenter + 4) + (int) ((radius - 12) * Math.sin(dd));
-
-                //因为是从顺时钟3点钟开始画;所以索引i需要加上3
-                int j = i + 3;
-                if (j > 12)
-                    j = j - 12;
-                g2d.setColor(Color.BLUE);
-                g2d.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-                g2d.drawString(Integer.toString(j), x, y);
-            }
-
-            AffineTransform old = g2d.getTransform();
-
-            g2d.setColor(Color.BLACK);
-
-
-            //时钟的60个刻度
-            for (int i = 0; i < 60; i++) {
-                int w = i % 5 == 0 ? 5 : 3;
-                //g2d.fillRect(xCenter - 2, 28, w, 3);
-                //g2d.rotate(Math.toRadians(6), xCenter, yCenter);
-            }
-            //设置旋转重置
-            g2d.setTransform(old);
-
-
-            Calendar calendar = Calendar.getInstance();
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            int minute = calendar.get(Calendar.MINUTE);
-            int second = calendar.get(Calendar.SECOND);
-
-            DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd");
-            DateFormat df2 = new SimpleDateFormat("E");
-            g2d.drawString(df2.format(calendar.getTime()), xCenter - 20, yCenter + 50);
-
-
-            double hAngle = (hour - 12 + minute / 60d) * 360d / 12d;
-            g2d.rotate(Math.toRadians(hAngle), xCenter, yCenter);
-            int xhArr[] = {xCenter, xCenter + 9, xCenter, xCenter - 9};
-            int yhArr[] = {65, yCenter, yCenter + 8, yCenter};
-            g2d.drawPolygon(xhArr, yhArr, xhArr.length);
-            g2d.fillPolygon(xhArr, yhArr, xhArr.length);
-            g2d.setTransform(old);
-
-
-            double mAngle = (minute + second / 60d) * 360d / 60d;
-            g2d.rotate(Math.toRadians(mAngle), xCenter, yCenter);
-            int xmArr[] = {xCenter, xCenter + 6, xCenter, xCenter - 6};
-            int ymArr[] = {45, yCenter, yCenter + 10, yCenter};
-            g2d.drawPolygon(xmArr, ymArr, xmArr.length);
-            g2d.fillPolygon(xmArr, ymArr, xmArr.length);
-            g2d.setTransform(old);
-
-
-            double sAngle = second * 360d / 60d;
-            g2d.rotate(Math.toRadians(sAngle), xCenter, yCenter);
-            g2d.setColor(Color.RED);
-            g2d.drawLine(xCenter, yCenter, xCenter, 35);
-
         }
     }
 
