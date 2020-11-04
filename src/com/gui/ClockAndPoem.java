@@ -436,7 +436,7 @@ public class ClockAndPoem {
 
         nextStatus = new JPanel();
         nextStatus.setBackground(Color.BLUE);
-        nextStatus.setPreferredSize(new Dimension(-1, 2));
+        nextStatus.setPreferredSize(new Dimension(-1, 1));
         colorBar.add(nextStatus);
 
         if (db.cacheSize() > 0) {
@@ -444,7 +444,7 @@ public class ClockAndPoem {
             for (int i = 0; i < db.cacheSize(); i++) {
                 JPanel rest = new JPanel();
                 rest.setBackground(Color.RED);
-                rest.setPreferredSize(new Dimension(-1, 2));
+                rest.setPreferredSize(new Dimension(-1, 1));
                 colorBar.add(rest);
             }
         }
