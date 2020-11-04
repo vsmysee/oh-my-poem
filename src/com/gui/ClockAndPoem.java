@@ -25,8 +25,6 @@ public class ClockAndPoem {
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_VERSION = System.getProperty("os.version");
 
-    private static final Integer FONT_SIZE_TITLE = 16;
-    private static final Integer FONT_SIZE_POEM = 22;
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
@@ -286,65 +284,14 @@ public class ClockAndPoem {
 
     }
 
-    static class CirclePanel extends JPanel {
-
-        public CirclePanel(String tag) {
-            setLayout(new GridLayout(0, 1));
-            this.setPreferredSize(new Dimension(14, 20));
-            add(new JLabel("<html><font color='white'>" + tag + "</font></html>"));
-        }
-
-        public CirclePanel(String tag, int width, int height) {
-            setLayout(new GridLayout(0, 1));
-            this.setPreferredSize(new Dimension(width, height));
-            add(new JLabel("<html><font color='white' size=5>" + tag + "</font></html>"));
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            g.setColor(Color.RED);
-            g.fillRoundRect(0, 0, getWidth(), getHeight(), 5, 5);
-        }
-    }
-
     private Date endDate;
-
-    private java.util.List<JPanel> buildPoemItem(List<String> items) {
-
-        java.util.List<JPanel> list = new ArrayList<>(items.size());
-
-        for (int i = 1; i < items.size(); i++) {
-
-            boolean title = (i == 1);
-
-            JPanel panel = new JPanel();
-            String text = items.get(i);
-
-
-            JLabel poemItem = new JLabel(text);
-            poemItem.setFont(new Font(Setting.FONT, Font.BOLD, title ? FONT_SIZE_TITLE : FONT_SIZE_POEM));
-            if (title) {
-
-                //add ico
-                panel.add(new CirclePanel(items.get(0)));
-
-                poemItem.setText("<html><font color='blue'>" + poemItem.getText() + "</font></html>");
-            }
-
-            panel.add(poemItem);
-
-            list.add(panel);
-        }
-
-        return list;
-    }
 
     private JFrame frame;
 
     private Box colorBar;
     private JComponent poemContainer;
     private JPanel nextStatus;
+    private JPanel bottomPanel;
 
 
     public void show() {
@@ -448,7 +395,8 @@ public class ClockAndPoem {
                 colorBar.add(rest);
             }
         }
-        java.util.List<JPanel> jPanels = buildPoemItem(pop);
+
+        java.util.List<JPanel> jPanels = PoemBuilder.buildPoemItem(pop);
         for (JPanel jPanel : jPanels) {
             poemContainer.add(jPanel);
         }
@@ -483,7 +431,7 @@ public class ClockAndPoem {
         });
 
         SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss");
-        JPanel bottomPanel = new JPanel();
+        bottomPanel = new JPanel();
         bottomPanel.setBorder(BorderFactory.createEtchedBorder());
         JLabel timeLabel = new JLabel(sf.format(new Date()));
         timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
@@ -712,6 +660,7 @@ public class ClockAndPoem {
     public void hidePoem() {
         poemContainer.setVisible(false);
         colorBar.setVisible(false);
+        bottomPanel.setVisible(false);
         frame.pack();
         stopAutoRefresh = true;
     }
@@ -719,6 +668,7 @@ public class ClockAndPoem {
     public void showPoem() {
         poemContainer.setVisible(true);
         colorBar.setVisible(true);
+        bottomPanel.setVisible(true);
         frame.pack();
         stopAutoRefresh = false;
     }
@@ -738,7 +688,7 @@ public class ClockAndPoem {
 
         poemContainer.removeAll();
 
-        List<JPanel> poemItems = buildPoemItem(items);
+        List<JPanel> poemItems = PoemBuilder.buildPoemItem(items);
 
         colorBar.removeAll();
         colorBar.add(nextStatus);

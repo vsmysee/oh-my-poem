@@ -314,7 +314,7 @@ public class ZoomDialog extends JDialog {
 
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.add(new ClockAndPoem.CirclePanel(poems.get(0), 20, 25));
+        bottom.add(new CirclePanel(poems.get(0), 20, 25));
         poemContent.add(bottom);
 
         addScroll(bottom);
