@@ -13,8 +13,6 @@ public class ZoomDialog extends JDialog {
     private static final int bodySize = 35;
 
 
-    private ClockAndPoem clockAndPoem;
-
     private JComponent poem;
 
     private List<JPanel> poemLabels = new ArrayList<>();
@@ -26,7 +24,6 @@ public class ZoomDialog extends JDialog {
 
     public ZoomDialog(List<String> poems, ClockAndPoem clockAndPoem) {
 
-        this.clockAndPoem = clockAndPoem;
         clockAndPoem.hidePoem();
 
         setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
@@ -105,15 +102,6 @@ public class ZoomDialog extends JDialog {
                     }
                 });
 
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                prev.setVisible(true);
-                next.setVisible(true);
-            }
-
-        });
 
     }
 
@@ -214,29 +202,13 @@ public class ZoomDialog extends JDialog {
         return item;
     }
 
-    private JLabel prev;
-    private JLabel next;
 
     private JComponent title(List<String> poems) {
 
         Box horizontalBox = Box.createHorizontalBox();
 
 
-        prev = new JLabel(new ImageIcon(getClass().getResource("/images/prev.png")));
-        prev.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                prev.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                clockAndPoem.refreshPoem(true, true);
-                refresh(clockAndPoem.db.current);
-            }
-        });
-        prev.setVisible(false);
-        horizontalBox.add(prev);
 
         horizontalBox.add(Box.createHorizontalGlue());
 
@@ -248,21 +220,8 @@ public class ZoomDialog extends JDialog {
         horizontalBox.add(title);
 
         horizontalBox.add(Box.createHorizontalGlue());
-        next = new JLabel(new ImageIcon(getClass().getResource("/images/next.png")));
-        next.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                next.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
 
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                clockAndPoem.refreshPoem(false, true);
-                refresh(clockAndPoem.db.current);
-            }
-        });
-        next.setVisible(false);
-        horizontalBox.add(next);
+
 
         title.add(comp);
         return horizontalBox;

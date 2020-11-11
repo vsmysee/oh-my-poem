@@ -297,6 +297,8 @@ public class ClockAndPoem {
     public void show() {
 
         frame = new JFrame();
+
+
         if (isWindows()) {
             frame.setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
         }
@@ -367,6 +369,8 @@ public class ClockAndPoem {
 
 
         JComponent content = Box.createVerticalBox();
+
+        content.add(navPanel);
 
         //color bar
         colorBar = Box.createHorizontalBox();
@@ -657,19 +661,78 @@ public class ClockAndPoem {
     }
 
 
+    private JLabel prev;
+    private JLabel next;
+
+    private JPanel navPanel = new JPanel();
+
+
+    {
+
+        prev = new JLabel(new ImageIcon(getClass().getResource("/images/prev.png")));
+        prev.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                prev.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                refreshPoem(true, true);
+                zoomDialog.refresh(db.current);
+            }
+        });
+
+        next = new JLabel(new ImageIcon(getClass().getResource("/images/next.png")));
+        next.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                next.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                refreshPoem(false, true);
+                zoomDialog.refresh(db.current);
+            }
+        });
+    }
+
+    {
+        navPanel.add(prev);
+        navPanel.add(new JPanel());
+        navPanel.add(next);
+        navPanel.setVisible(false);
+    }
+
     public void hidePoem() {
         poemContainer.setVisible(false);
         colorBar.setVisible(false);
         bottomPanel.setVisible(false);
+
+        navPanel.setVisible(true);
+
         frame.pack();
+
+        int x = Double.valueOf(frame.getSize().getWidth()).intValue();
+        frame.setLocation(screenSize.width - x, screenSize.height / 2);
+
         stopAutoRefresh = true;
     }
 
     public void showPoem() {
+
+        navPanel.setVisible(false);
+
         poemContainer.setVisible(true);
         colorBar.setVisible(true);
         bottomPanel.setVisible(true);
+
         frame.pack();
+
+        int x = Double.valueOf(frame.getSize().getWidth()).intValue();
+        frame.setLocation(screenSize.width - x, 0);
+
         stopAutoRefresh = false;
     }
 
