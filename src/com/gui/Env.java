@@ -1,6 +1,8 @@
 package com.gui;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Env {
 
@@ -21,6 +23,22 @@ public class Env {
 
     public static boolean isMacOs() {
         return OS_NAME.indexOf("Mac OS") > -1;
+    }
+
+    public static List<String> FONTS = new ArrayList<>();
+
+    public static void fontList() {
+
+        String fonts[] =
+                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+
+        for (int i = 0; i < fonts.length; i++) {
+
+            if (fonts[i].matches("[\\u4E00-\\u9FA5]+")) {
+                FONTS.add(fonts[i]);
+            }
+        }
+
     }
 
 
