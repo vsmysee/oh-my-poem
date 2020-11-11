@@ -20,11 +20,6 @@ public class ClockAndPoem {
 
     private static final String NAME = "/data/one.txt";
 
-    public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-    private static final String OS_NAME = System.getProperty("os.name");
-    private static final String OS_VERSION = System.getProperty("os.version");
-
     private static Integer CHUNK_SIZE = 16;
     private static final Integer FREQ = 30;
 
@@ -41,21 +36,9 @@ public class ClockAndPoem {
 
     private static List<String> FONTS = new ArrayList<>();
 
-    public static boolean isWindows() {
-        return OS_NAME.indexOf("Windows") > -1;
-    }
-
-    public static boolean isLinux() {
-        return OS_NAME.indexOf("Linux") > -1;
-    }
-
-    public static boolean isMacOs() {
-        return OS_NAME.indexOf("Mac OS") > -1;
-    }
-
     static void initDB() {
 
-        if (screenSize.getHeight() < 1000) {
+        if (Env.getHeight() < 1000) {
             CHUNK_SIZE = 12;
         }
 
@@ -299,11 +282,11 @@ public class ClockAndPoem {
         frame = new JFrame();
 
 
-        if (isWindows()) {
+        if (Env.isWindows()) {
             frame.setIconImage(new ImageIcon(getClass().getResource("/images/book.png")).getImage());
         }
 
-        if (isMacOs()) {
+        if (Env.isMacOs()) {
         }
 
         JPopupMenu popupMenu = new JPopupMenu();
@@ -475,7 +458,7 @@ public class ClockAndPoem {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         frame.pack();
-        frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
+        frame.setLocation(Env.getWidth() - Double.valueOf(frame.getSize().getWidth()).intValue(), 0);
         frame.setAlwaysOnTop(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -529,10 +512,10 @@ public class ClockAndPoem {
             if (y <= 0) {
                 down.set(true);
             }
-            if (y > screenSize.getHeight() - frame.getSize().getHeight()) {
+            if (y > Env.getHeight() - frame.getSize().getHeight()) {
                 down.set(false);
             }
-            frame.setLocation(screenSize.width - Double.valueOf(frame.getSize().getWidth()).intValue(), y);
+            frame.setLocation(Env.getWidth() - Double.valueOf(frame.getSize().getWidth()).intValue(), y);
             frame.revalidate();
         };
 
@@ -715,7 +698,7 @@ public class ClockAndPoem {
         frame.pack();
 
         int x = Double.valueOf(frame.getSize().getWidth()).intValue();
-        frame.setLocation(screenSize.width - x, screenSize.height / 2);
+        frame.setLocation(Env.getWidth() - x, Env.getHeight() / 2);
 
         stopAutoRefresh = true;
     }
@@ -731,7 +714,7 @@ public class ClockAndPoem {
         frame.pack();
 
         int x = Double.valueOf(frame.getSize().getWidth()).intValue();
-        frame.setLocation(screenSize.width - x, 0);
+        frame.setLocation(Env.getWidth() - x, 0);
 
         stopAutoRefresh = false;
     }
@@ -778,7 +761,7 @@ public class ClockAndPoem {
         if (frame.getLocation().x == 0) {
             frame.setLocation(0, 0);
         } else {
-            frame.setLocation(screenSize.width - x, 0);
+            frame.setLocation(Env.getWidth() - x, 0);
         }
     }
 
@@ -787,4 +770,5 @@ public class ClockAndPoem {
         ClockAndPoem gui = new ClockAndPoem();
         gui.show();
     }
+
 }

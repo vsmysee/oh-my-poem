@@ -127,12 +127,12 @@ public class ZoomDialog extends JDialog {
 
     private void resetPosition(List<String> poems, JComponent poem) {
         if (poems.size() > 10) {
-            setLocation(ClockAndPoem.screenSize.width / 2 - (getWidth() / 2), (ClockAndPoem.screenSize.height - getHeight()) / 2);
+            setLocation(Env.getWidth() / 2 - (getWidth() / 2), (Env.getHeight() - getHeight()) / 2);
         } else {
             setLocationRelativeTo(null);
         }
 
-        if (getHeight() > ClockAndPoem.screenSize.height - 30) {
+        if (getHeight() > Env.getHeight() - 30) {
 
             if (timer == null) {
                 timer = new Timer(500, new ActionListener() {
