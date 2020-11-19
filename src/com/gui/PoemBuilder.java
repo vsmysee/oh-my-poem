@@ -27,7 +27,6 @@ public class PoemBuilder {
             JPanel panel = new JPanel();
             String text = items.get(i);
 
-
             JLabel poemItem = new JLabel(text);
             poemItem.setFont(new Font(Setting.FONT, Font.BOLD, title ? FONT_SIZE_TITLE : FONT_SIZE_POEM));
             if (title) {
@@ -48,13 +47,6 @@ public class PoemBuilder {
         return list;
     }
 
-
-
-    public static PoemPanel build(List<String> poems) {
-        return poem(poems);
-    }
-
-
     private static JComponent title(List<String> poems) {
 
         Box horizontalBox = Box.createHorizontalBox();
@@ -74,9 +66,7 @@ public class PoemBuilder {
         return horizontalBox;
     }
 
-
-
-    private static PoemPanel poem(List<String> poems) {
+    public static PoemPanel build(List<String> poems) {
 
         JComponent poemRoot = Box.createVerticalBox();
 

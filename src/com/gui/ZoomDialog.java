@@ -105,10 +105,8 @@ public class ZoomDialog extends JDialog {
                     public void actionPerformed(ActionEvent e) {
                         clockAndPoem.refreshPoem(true, true);
                         refresh(clockAndPoem.db.current);
-
                     }
                 });
-
 
     }
 
@@ -125,10 +123,6 @@ public class ZoomDialog extends JDialog {
 
         }
     }
-
-
-
-
 
     private void resetPosition(List<String> poems, JComponent poem) {
         if (poems.size() > 10) {
@@ -199,10 +193,5 @@ public class ZoomDialog extends JDialog {
 
         resetPosition(poems, poem);
     }
-
-
-
-
-
 
 }
