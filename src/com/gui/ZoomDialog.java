@@ -8,19 +8,13 @@ import java.util.List;
 
 public class ZoomDialog extends JDialog {
 
-    private static final int titleSize = 25;
-
-    private static final int bodySize = 35;
-
-
     private JComponent poem;
-
-    private List<JPanel> poemLabels = new ArrayList<>();
 
     private List<Point> points = new ArrayList<>();
 
     private Timer timer;
 
+    private List<JPanel> poemLabels;
 
     public ZoomDialog(List<String> poems, ClockAndPoem clockAndPoem) {
 
@@ -52,8 +46,10 @@ public class ZoomDialog extends JDialog {
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 
-        poem = poem(poems);
+        PoemPanel pp = PoemBuilder.build(poems);
+        poem = pp.getPoem();
         add(poem);
+        poemLabels = pp.getPoemLabels();
         pack();
 
         if (getWidth() < 600) {
@@ -69,6 +65,17 @@ public class ZoomDialog extends JDialog {
             public void windowClosed(WindowEvent e) {
                 clockAndPoem.showPoem();
                 clockAndPoem.clearZoom();
+            }
+
+
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount() == 2){
+                    ZoomDialog.this.dispose();
+                }
             }
         });
 
@@ -120,9 +127,7 @@ public class ZoomDialog extends JDialog {
     }
 
 
-    public void addScroll(JPanel panel) {
-        poemLabels.add(panel);
-    }
+
 
 
     private void resetPosition(List<String> poems, JComponent poem) {
@@ -183,7 +188,7 @@ public class ZoomDialog extends JDialog {
 
         poemLabels.clear();
 
-        poem = poem(poems);
+        poem = PoemBuilder.build(poems).getPoem();
         add(poem);
 
         pack();
@@ -196,91 +201,8 @@ public class ZoomDialog extends JDialog {
     }
 
 
-    private JLabel buildJLabel(String text, int size) {
-        JLabel item = new JLabel(text);
-        item.setFont(new Font(Setting.FONT, Font.BOLD, size));
-        return item;
-    }
-
-
-    private JComponent title(List<String> poems) {
-
-        Box horizontalBox = Box.createHorizontalBox();
 
 
 
-
-        horizontalBox.add(Box.createHorizontalGlue());
-
-        JPanel title = new JPanel();
-
-        JLabel comp = buildJLabel(poems.get(1), titleSize);
-        comp.setText("<html><font color='blue'>" + comp.getText() + "</font></html>");
-
-        horizontalBox.add(title);
-
-        horizontalBox.add(Box.createHorizontalGlue());
-
-
-
-        title.add(comp);
-        return horizontalBox;
-    }
-
-
-    private JComponent poem(List<String> poems) {
-        JComponent poemRoot = Box.createVerticalBox();
-
-
-        poemRoot.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
-
-        poemRoot.add(title(poems));
-
-        poemRoot.add(new JSeparator());
-        poemRoot.add(Box.createVerticalStrut(10));
-
-        int index = 2;
-
-        while (index < poems.size()) {
-
-            JPanel panel = new JPanel();
-
-            String left = poems.get(index).trim();
-            panel.add(buildJLabel(left, bodySize));
-
-            if ((index + 1) < poems.size()) {
-
-                String right = poems.get(index + 1).trim();
-
-                if (left.length() == right.length()) {
-                    panel.add(buildJLabel("，", bodySize));
-                    panel.add(buildJLabel(right, bodySize));
-                    index++;
-                }
-
-            }
-
-            index++;
-
-            addScroll(panel);
-
-        }
-
-        Box poemContent = Box.createVerticalBox();
-        for (JPanel poemLabel : poemLabels) {
-            poemContent.add(poemLabel);
-        }
-
-
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.add(new CirclePanel(poems.get(0), 20, 25));
-        poemContent.add(bottom);
-
-        addScroll(bottom);
-
-        poemRoot.add(poemContent);
-
-        return poemRoot;
-    }
 
 }
