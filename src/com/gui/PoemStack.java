@@ -107,7 +107,7 @@ public class PoemStack {
         }
 
         Random rand = new Random();
-        int index = 0 + rand.nextInt((from.size() - 1 - 0) + 1);
+        int index = 0 + rand.nextInt(from.size());
         String poem = from.get(index);
 
         return poem;
@@ -139,7 +139,7 @@ public class PoemStack {
         }
 
         int start = item.indexOf("》;");
-        if (item.substring(start).length() < 40) {
+        if (start != -1 && item.substring(start).length() < 40) {
             shortPoem.add(item);
         }
 
