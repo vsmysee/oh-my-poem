@@ -6,6 +6,7 @@ import java.util.List;
 
 public class Env {
 
+    public static final String POEM_DATA_FILE = "/data/one.txt";
 
     public static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 

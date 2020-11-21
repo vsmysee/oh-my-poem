@@ -113,7 +113,7 @@ public class PoemBuilder {
 
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.add(new CirclePanel(poems.get(0), 20, 25));
+        bottom.add(new CirclePanel(poems.get(0)));
         poemContent.add(bottom);
 
         poemPanel.add(bottom);

@@ -366,7 +366,6 @@ public class ClockAndPoem {
 
         while (true) {
 
-
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !stopAutoRefresh) {
 
                 refreshPoem(false, false);

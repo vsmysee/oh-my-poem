@@ -11,11 +11,6 @@ public class CirclePanel extends JPanel {
         add(new JLabel("<html><font color='white'>" + tag + "</font></html>"));
     }
 
-    public CirclePanel(String tag, int width, int height) {
-        setLayout(new GridLayout(0, 1));
-        add(new JLabel("<html><font color='white' size=5>" + tag + "</font></html>"));
-    }
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

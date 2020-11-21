@@ -66,8 +66,6 @@ public class ZoomDialog extends JDialog {
                 clockAndPoem.showPoem();
                 clockAndPoem.clearZoom();
             }
-
-
         });
 
         addMouseListener(new MouseAdapter() {
@@ -107,7 +105,6 @@ public class ZoomDialog extends JDialog {
                         refresh(clockAndPoem.db.current);
                     }
                 });
-
     }
 
     private void restoreScroll() {
@@ -179,10 +176,11 @@ public class ZoomDialog extends JDialog {
         }
 
         remove(poem);
-
         poemLabels.clear();
 
-        poem = PoemBuilder.build(poems).getPoem();
+        PoemPanel build = PoemBuilder.build(poems);
+        poem = build.getPoem();
+        poemLabels = build.getPoemLabels();
         add(poem);
 
         pack();

@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 public class PoemStack {
 
-    private static final String NAME = "/data/one.txt";
-
     public static Integer CHUNK_SIZE = 16;
 
     private List<List<String>> cache = new ArrayList<>();
@@ -29,7 +27,6 @@ public class PoemStack {
 
     public static Set<String> authors = new HashSet<>();
 
-
     public void initDB() {
 
         if (Env.getHeight() < 1000) {
@@ -39,13 +36,12 @@ public class PoemStack {
         try {
 
             String data = "";
-            try (InputStream is = ClockAndPoem.class.getResourceAsStream(NAME)) {
+            try (InputStream is = ClockAndPoem.class.getResourceAsStream(Env.POEM_DATA_FILE)) {
                 try (InputStreamReader isr = new InputStreamReader(is, "UTF-8");
                      BufferedReader reader = new BufferedReader(isr)) {
                     data = reader.lines().collect(Collectors.joining(System.lineSeparator()));
                 }
             }
-
 
             for (String item : data.split("\n")) {
 
@@ -56,9 +52,7 @@ public class PoemStack {
                 } catch (Exception e) {
 
                 }
-
             }
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -223,7 +217,5 @@ public class PoemStack {
         }
         return chunkList;
     }
-
-
 
 }
