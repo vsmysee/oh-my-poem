@@ -17,16 +17,9 @@ public class ClockAndPoem {
 
     public boolean stopAutoRefresh = false;
 
-    public static PoemStack db = new PoemStack();
-
     private static Set<String> selectAuthor = new HashSet<>();
 
     private static ZoomDialog zoomDialog;
-
-    static {
-        db.initDB();
-        Env.fontList();
-    }
 
     private Date endDate;
 
@@ -58,7 +51,7 @@ public class ClockAndPoem {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectAuthor.clear();
-                db.source.clear();
+                Env.db.source.clear();
             }
         });
 
@@ -88,7 +81,7 @@ public class ClockAndPoem {
                 JDialog jDialog = new JDialog();
                 jDialog.setSize(600, 500);
                 jDialog.setLayout(new GridLayout(0, 6));
-                for (String item : db.authors) {
+                for (String item : Env.db.authors) {
                     JToggleButton selectBtn = new JToggleButton(item);
                     if (selectAuthor.contains(item)) {
                         selectBtn.setSelected(true);
@@ -97,7 +90,7 @@ public class ClockAndPoem {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             selectAuthor.add(item);
-                            db.source.addAll(db.authorPoems.get(item));
+                            Env.db.source.addAll(Env.db.authorPoems.get(item));
                         }
                     });
                     jDialog.add(selectBtn);
@@ -126,16 +119,16 @@ public class ClockAndPoem {
 
         content.add(colorBar);
 
-        List<String> pop = db.pop();
+        List<String> pop = Env.db.pop();
 
         nextStatus = new JPanel();
         nextStatus.setBackground(Color.BLUE);
         nextStatus.setPreferredSize(new Dimension(-1, 1));
         colorBar.add(nextStatus);
 
-        if (db.cacheSize() > 0) {
+        if (Env.db.cacheSize() > 0) {
 
-            for (int i = 0; i < db.cacheSize(); i++) {
+            for (int i = 0; i < Env.db.cacheSize(); i++) {
                 JPanel rest = new JPanel();
                 rest.setBackground(Color.RED);
                 rest.setPreferredSize(new Dimension(-1, 1));
@@ -169,9 +162,9 @@ public class ClockAndPoem {
 
                 if (e.getClickCount() == 2) {
                     if (zoomDialog == null) {
-                        zoomDialog = new ZoomDialog(db.current, ClockAndPoem.this);
+                        zoomDialog = new ZoomDialog(Env.db.current, ClockAndPoem.this);
                     } else {
-                        zoomDialog.refresh(db.current);
+                        zoomDialog.refresh(Env.db.current);
                     }
                 }
             }
@@ -243,21 +236,21 @@ public class ClockAndPoem {
         content.getActionMap().put("refreshPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        refreshPoem(false, false);
+                        refreshPoem(false);
                     }
                 });
 
         content.getActionMap().put("lastPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        refreshPoem(true, false);
+                        refreshPoem(true);
                     }
                 });
 
         content.getActionMap().put("openPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        new ZoomDialog(db.current, ClockAndPoem.this);
+                        new ZoomDialog(Env.db.current, ClockAndPoem.this);
                     }
                 });
 
@@ -368,10 +361,10 @@ public class ClockAndPoem {
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !stopAutoRefresh) {
 
-                refreshPoem(false, false);
+                refreshPoem(false);
 
                 if (zoomDialog != null) {
-                    zoomDialog.refresh(db.current);
+                    zoomDialog.refresh(Env.db.current);
                 }
 
             }
@@ -403,6 +396,7 @@ public class ClockAndPoem {
     }
 
 
+
     private JLabel prev;
     private JLabel next;
 
@@ -420,8 +414,8 @@ public class ClockAndPoem {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                refreshPoem(true, true);
-                zoomDialog.refresh(db.current);
+                Env.db.popHistory();
+                zoomDialog.refresh(Env.db.current);
             }
         });
 
@@ -434,8 +428,8 @@ public class ClockAndPoem {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                refreshPoem(false, true);
-                zoomDialog.refresh(db.current);
+                Env.db.popRandom();
+                zoomDialog.refresh(Env.db.current);
             }
         });
     }
@@ -483,13 +477,9 @@ public class ClockAndPoem {
     }
 
 
-    public void refreshPoem(boolean history, boolean onlyPop) {
+    public void refreshPoem(boolean history) {
 
-        List<String> items = history ? db.popHistory() : onlyPop ? db.popRandom() : db.pop();
-
-        if (onlyPop) {
-            return;
-        }
+        List<String> items = history ? Env.db.popHistory() : Env.db.pop();
 
         poemContainer.removeAll();
 
@@ -498,9 +488,9 @@ public class ClockAndPoem {
         colorBar.removeAll();
         colorBar.add(nextStatus);
 
-        if (db.cacheSize() > 0) {
+        if (Env.db.cacheSize() > 0) {
 
-            for (int i = 0; i < db.cacheSize(); i++) {
+            for (int i = 0; i < Env.db.cacheSize(); i++) {
                 JPanel rest = new JPanel();
                 rest.setBackground(Color.BLACK);
                 rest.setPreferredSize(new Dimension(-1, 1));

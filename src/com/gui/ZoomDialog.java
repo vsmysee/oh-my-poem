@@ -16,6 +16,7 @@ public class ZoomDialog extends JDialog {
 
     private List<JPanel> poemLabels;
 
+
     public ZoomDialog(List<String> poems, ClockAndPoem clockAndPoem) {
 
         clockAndPoem.hidePoem();
@@ -56,7 +57,7 @@ public class ZoomDialog extends JDialog {
             setSize(600,getHeight());
         }
 
-        resetPosition(poems, poem);
+        resetPosition(poems);
 
         setVisible(true);
 
@@ -92,17 +93,16 @@ public class ZoomDialog extends JDialog {
         getRootPane().getActionMap().put("nextPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        clockAndPoem.refreshPoem(false, true);
-                        refresh(clockAndPoem.db.current);
-
+                        Env.db.popRandom();
+                        refresh(Env.db.current);
                     }
                 });
 
         getRootPane().getActionMap().put("lastPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        clockAndPoem.refreshPoem(true, true);
-                        refresh(clockAndPoem.db.current);
+                        Env.db.popHistory();
+                        refresh(Env.db.current);
                     }
                 });
     }
@@ -121,7 +121,7 @@ public class ZoomDialog extends JDialog {
         }
     }
 
-    private void resetPosition(List<String> poems, JComponent poem) {
+    private void resetPosition(List<String> poems) {
         if (poems.size() > 10) {
             setLocation(Env.getWidth() / 2 - (getWidth() / 2), (Env.getHeight() - getHeight()) / 2);
         } else {
@@ -189,7 +189,8 @@ public class ZoomDialog extends JDialog {
             setSize(600,getHeight());
         }
 
-        resetPosition(poems, poem);
+        resetPosition(poems);
     }
+
 
 }

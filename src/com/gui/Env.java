@@ -14,6 +14,9 @@ public class Env {
     private static final String OS_VERSION = System.getProperty("os.version");
 
 
+    public static PoemStack db = new PoemStack();
+
+
     public static boolean isWindows() {
         return OS_NAME.indexOf("Windows") > -1;
     }
@@ -27,6 +30,11 @@ public class Env {
     }
 
     public static List<String> FONTS = new ArrayList<>();
+
+    static {
+        db.initDB();
+        fontList();
+    }
 
     public static void fontList() {
 
