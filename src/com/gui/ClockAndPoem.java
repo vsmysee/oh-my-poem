@@ -30,6 +30,8 @@ public class ClockAndPoem {
     private JPanel nextStatus;
     private JPanel bottomPanel;
 
+    private NavPanel navPanel = new NavPanel();
+
 
     public void show() {
 
@@ -106,6 +108,7 @@ public class ClockAndPoem {
 
         JComponent content = Box.createVerticalBox();
 
+
         content.add(navPanel);
 
         //color bar
@@ -163,6 +166,7 @@ public class ClockAndPoem {
                 if (e.getClickCount() == 2) {
                     if (zoomDialog == null) {
                         zoomDialog = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        navPanel.setZoomDialog(zoomDialog);
                     } else {
                         zoomDialog.refresh(Env.db.current);
                     }
@@ -250,7 +254,8 @@ public class ClockAndPoem {
         content.getActionMap().put("openPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        ZoomDialog zoom = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        navPanel.setZoomDialog(zoom);
                     }
                 });
 
@@ -396,50 +401,6 @@ public class ClockAndPoem {
     }
 
 
-
-    private JLabel prev;
-    private JLabel next;
-
-    private JPanel navPanel = new JPanel();
-
-
-    {
-
-        prev = new JLabel(new ImageIcon(getClass().getResource("/images/prev.png")));
-        prev.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                prev.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Env.db.popHistory();
-                zoomDialog.refresh(Env.db.current);
-            }
-        });
-
-        next = new JLabel(new ImageIcon(getClass().getResource("/images/next.png")));
-        next.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                next.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Env.db.popRandom();
-                zoomDialog.refresh(Env.db.current);
-            }
-        });
-    }
-
-    {
-        navPanel.add(prev);
-        navPanel.add(new JPanel());
-        navPanel.add(next);
-        navPanel.setVisible(false);
-    }
 
     public void hidePoem() {
         poemContainer.setVisible(false);
