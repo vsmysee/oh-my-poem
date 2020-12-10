@@ -10,7 +10,7 @@ public class NavPanel extends JPanel {
     private JLabel prev;
     private JLabel next;
 
-    private ZoomDialog zoomDialog;
+    private ZoomDialog2 zoomDialog;
 
     public NavPanel() {
 
@@ -50,7 +50,7 @@ public class NavPanel extends JPanel {
 
     }
 
-    public void setZoomDialog(ZoomDialog zoomDialog) {
+    public void setZoomDialog(ZoomDialog2 zoomDialog) {
         this.zoomDialog = zoomDialog;
     }
 }

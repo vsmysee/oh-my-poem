@@ -19,7 +19,7 @@ public class ClockAndPoem {
 
     private static Set<String> selectAuthor = new HashSet<>();
 
-    private static ZoomDialog zoomDialog;
+    private static ZoomDialog2 zoomDialog;
 
     private Date endDate;
 
@@ -165,7 +165,7 @@ public class ClockAndPoem {
 
                 if (e.getClickCount() == 2) {
                     if (zoomDialog == null) {
-                        zoomDialog = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        zoomDialog = new ZoomDialog2(Env.db.current, ClockAndPoem.this);
                         navPanel.setZoomDialog(zoomDialog);
                     } else {
                         zoomDialog.refresh(Env.db.current);
@@ -254,7 +254,7 @@ public class ClockAndPoem {
         content.getActionMap().put("openPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        ZoomDialog zoom = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        ZoomDialog2 zoom = new ZoomDialog2(Env.db.current, ClockAndPoem.this);
                         navPanel.setZoomDialog(zoom);
                     }
                 });
