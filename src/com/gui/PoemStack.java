@@ -63,6 +63,10 @@ public class PoemStack {
 
     }
 
+    public boolean isShort() {
+        return current.size() < 10;
+    }
+
     public void push(String item) {
         items.add(item);
         authorData(item);

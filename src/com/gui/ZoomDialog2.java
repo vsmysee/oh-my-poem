@@ -47,7 +47,7 @@ public class ZoomDialog2 extends JDialog {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 2){
+                if (e.getClickCount() == 2) {
                     ZoomDialog2.this.dispose();
                 }
             }

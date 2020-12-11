@@ -104,25 +104,30 @@ public class PoemBuilder {
         return label;
     }
 
+
     public static JComponent build2(List<String> poems) {
         Box horizontalBox = Box.createHorizontalBox();
 
         String title = poems.get(1);
         int index = title.indexOf("《");
 
-        Box box = Box.createHorizontalBox();
-        CirclePanel song = new CirclePanel("宋");
-        box.add(song);
-        box.add(buildAuthor("     " + title.substring(0, index)));
-
-        horizontalBox.add(box);
-        horizontalBox.add(Box.createHorizontalStrut(10));
-
-
         for (int i = poems.size() - 1; i > 1; i--) {
             horizontalBox.add(convertToHtml(poems.get(i), false));
         }
-        horizontalBox.add(Box.createHorizontalStrut(10));
+
+        Box box = Box.createVerticalBox();
+        CirclePanel song = new CirclePanel("宋");
+        song.setMaximumSize(new Dimension(16, 16));
+        box.add(buildAuthor("   "));
+        box.add(song);
+        box.add(buildAuthor(" "));
+        box.add(buildAuthor(title.substring(0, index)));
+
+
+        horizontalBox.add(box);
+        horizontalBox.add(Box.createHorizontalStrut(15));
+
+
         title = title.substring(index);
         horizontalBox.add(convertToHtml(title.replace("《", "").replace("》", ""), true));
 
@@ -188,6 +193,7 @@ public class PoemBuilder {
 
         return poemPanel;
     }
+
 
     private static JLabel buildJLabel(String text, int size) {
         JLabel item = new JLabel(text);

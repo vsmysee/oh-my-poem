@@ -10,7 +10,8 @@ public class NavPanel extends JPanel {
     private JLabel prev;
     private JLabel next;
 
-    private ZoomDialog2 zoomDialog;
+    private ZoomDialog2 zoomDialog2;
+    private ZoomDialog zoomDialog;
 
     public NavPanel() {
 
@@ -24,7 +25,12 @@ public class NavPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Env.db.popHistory();
-                zoomDialog.refresh(Env.db.current);
+                if (zoomDialog2 != null) {
+                    zoomDialog.refresh(Env.db.current);
+                }
+                if (zoomDialog != null) {
+                    zoomDialog.refresh(Env.db.current);
+                }
             }
         });
 
@@ -38,7 +44,12 @@ public class NavPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Env.db.popRandom();
-                zoomDialog.refresh(Env.db.current);
+                if (zoomDialog != null) {
+                    zoomDialog.refresh(Env.db.current);
+                }
+                if (zoomDialog2 != null) {
+                    zoomDialog2.refresh(Env.db.current);
+                }
             }
         });
 
@@ -50,7 +61,11 @@ public class NavPanel extends JPanel {
 
     }
 
-    public void setZoomDialog(ZoomDialog2 zoomDialog) {
+    public void setZoomDialog2(ZoomDialog2 zoomDialog) {
+        this.zoomDialog2 = zoomDialog;
+    }
+
+    public void setZoomDialog(ZoomDialog zoomDialog) {
         this.zoomDialog = zoomDialog;
     }
 }
