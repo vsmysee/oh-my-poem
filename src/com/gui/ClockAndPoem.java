@@ -19,7 +19,6 @@ public class ClockAndPoem {
 
     private static Set<String> selectAuthor = new HashSet<>();
 
-    private static ZoomDialog2 zoomDialog2;
     private static ZoomDialog zoomDialog;
 
     private Date endDate;
@@ -165,23 +164,12 @@ public class ClockAndPoem {
             public void mouseClicked(MouseEvent e) {
 
                 if (e.getClickCount() == 2) {
-
-                    if (Env.db.isShort()) {
-                        if (zoomDialog == null) {
-                            zoomDialog = new ZoomDialog(Env.db.current, ClockAndPoem.this);
-                            navPanel.setZoomDialog(zoomDialog);
-                        } else {
-                            zoomDialog.refresh(Env.db.current);
-                        }
+                    if (zoomDialog == null) {
+                        zoomDialog = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        navPanel.setZoomDialog(zoomDialog);
                     } else {
-                        if (zoomDialog2 == null) {
-                            zoomDialog2 = new ZoomDialog2(Env.db.current, ClockAndPoem.this);
-                            navPanel.setZoomDialog2(zoomDialog2);
-                        } else {
-                            zoomDialog2.refresh(Env.db.current);
-                        }
+                        zoomDialog.refresh(Env.db.current);
                     }
-
                 }
             }
         });
@@ -266,16 +254,8 @@ public class ClockAndPoem {
         content.getActionMap().put("openPoem",
                 new AbstractAction() {
                     public void actionPerformed(ActionEvent e) {
-                        if (Env.db.isShort()) {
-
-                            ZoomDialog zoom = new ZoomDialog(Env.db.current, ClockAndPoem.this);
-                            navPanel.setZoomDialog(zoom);
-                        } else {
-
-                            ZoomDialog2 zoom = new ZoomDialog2(Env.db.current, ClockAndPoem.this);
-                            navPanel.setZoomDialog2(zoom);
-                        }
-
+                        ZoomDialog zoom = new ZoomDialog(Env.db.current, ClockAndPoem.this);
+                        navPanel.setZoomDialog(zoom);
                     }
                 });
 
@@ -450,7 +430,6 @@ public class ClockAndPoem {
 
     public void clearZoom() {
         zoomDialog = null;
-        zoomDialog2 = null;
     }
 
 

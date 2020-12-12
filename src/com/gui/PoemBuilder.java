@@ -105,7 +105,7 @@ public class PoemBuilder {
     }
 
 
-    public static JComponent build2(List<String> poems) {
+    private static JComponent build2(List<String> poems) {
         Box horizontalBox = Box.createHorizontalBox();
 
         String title = poems.get(1);
@@ -137,11 +137,13 @@ public class PoemBuilder {
     }
 
 
-    public static PoemPanel build(List<String> poems) {
+    public static JComponent build(List<String> poems) {
+
+        if (poems.size() >= ZoomDialog.SHORT_POEM) {
+            return build2(poems);
+        }
 
         JComponent poemRoot = Box.createVerticalBox();
-
-        PoemPanel poemPanel = new PoemPanel(poemRoot);
 
         poemRoot.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
 
@@ -151,6 +153,8 @@ public class PoemBuilder {
         poemRoot.add(Box.createVerticalStrut(10));
 
         int index = 2;
+
+        List<JPanel> panels = new ArrayList<>();
 
         while (index < poems.size()) {
 
@@ -173,12 +177,12 @@ public class PoemBuilder {
 
             index++;
 
-            poemPanel.add(panel);
+            panels.add(panel);
 
         }
 
         Box poemContent = Box.createVerticalBox();
-        for (JPanel poemLabel : poemPanel.getPoemLabels()) {
+        for (JPanel poemLabel : panels) {
             poemContent.add(poemLabel);
         }
 
@@ -187,11 +191,10 @@ public class PoemBuilder {
         bottom.add(new CirclePanel(poems.get(0)));
         poemContent.add(bottom);
 
-        poemPanel.add(bottom);
 
         poemRoot.add(poemContent);
 
-        return poemPanel;
+        return poemRoot;
     }
 
 
