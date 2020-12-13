@@ -116,7 +116,7 @@ public class PoemBuilder {
         }
 
         Box box = Box.createVerticalBox();
-        CirclePanel song = new CirclePanel("宋");
+        CirclePanel song = new CirclePanel(poems.get(0));
         song.setMaximumSize(new Dimension(16, 16));
         box.add(buildAuthor("   "));
         box.add(song);
