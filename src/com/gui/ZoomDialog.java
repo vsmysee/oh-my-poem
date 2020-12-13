@@ -29,18 +29,7 @@ public class ZoomDialog extends JDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        poem = PoemBuilder.build(poems);
-        add(poem);
-        pack();
-
-        if (poems.size() < SHORT_POEM) {
-
-            if (getWidth() < 600) {
-                setSize(600, getHeight());
-            }
-        }
-
-        setLocationRelativeTo(null);
+        setContent(poems);
 
         setVisible(true);
 
@@ -91,13 +80,9 @@ public class ZoomDialog extends JDialog {
     }
 
 
-    public void refresh(List<String> poems) {
-
-        remove(poem);
-
+    private void setContent(List<String> poems) {
         poem = PoemBuilder.build(poems);
         add(poem);
-
         pack();
 
         if (poems.size() < SHORT_POEM) {
@@ -107,8 +92,15 @@ public class ZoomDialog extends JDialog {
             }
         }
 
-
         setLocationRelativeTo(null);
+    }
+
+
+    public void refresh(List<String> poems) {
+
+        remove(poem);
+
+        setContent(poems);
 
     }
 
