@@ -1,15 +1,11 @@
 package com.gui;
 
-import javax.swing.Timer;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.List;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 
 public class ClockAndPoem {
 
@@ -21,14 +17,11 @@ public class ClockAndPoem {
 
     private static ZoomDialog zoomDialog;
 
-    private Date endDate;
-
     private JFrame frame;
 
     private Box colorBar;
     private JComponent poemContainer;
     private JPanel nextStatus;
-    private JPanel bottomPanel;
 
     private NavPanel navPanel = new NavPanel();
 
@@ -44,70 +37,7 @@ public class ClockAndPoem {
         if (Env.isMacOs()) {
         }
 
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem select = new JMenuItem("选择");
-        JMenuItem reset = new JMenuItem("重置");
-        JMenuItem fonts = new JMenuItem("字体");
-
-        reset.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectAuthor.clear();
-                Env.db.source.clear();
-            }
-        });
-
-        fonts.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JDialog jDialog = new JDialog();
-                JComboBox<String> comp = new JComboBox<String>(Env.FONTS.toArray(new String[]{}));
-                jDialog.add(comp);
-                comp.addItemListener(new ItemListener() {
-                    @Override
-                    public void itemStateChanged(ItemEvent e) {
-                        Object selectedItem = comp.getSelectedItem();
-                        Setting.FONT = selectedItem.toString();
-                        jDialog.dispose();
-                    }
-                });
-                jDialog.pack();
-                jDialog.setLocationRelativeTo(null);
-                jDialog.setVisible(true);
-            }
-        });
-
-        select.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JDialog jDialog = new JDialog();
-                jDialog.setSize(600, 500);
-                jDialog.setLayout(new GridLayout(0, 6));
-                for (String item : Env.db.authors) {
-                    JToggleButton selectBtn = new JToggleButton(item);
-                    if (selectAuthor.contains(item)) {
-                        selectBtn.setSelected(true);
-                    }
-                    selectBtn.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            selectAuthor.add(item);
-                            Env.db.source.addAll(Env.db.authorPoems.get(item));
-                        }
-                    });
-                    jDialog.add(selectBtn);
-                }
-                jDialog.setLocationRelativeTo(null);
-                jDialog.setVisible(true);
-            }
-        });
-        popupMenu.add(select);
-        popupMenu.add(reset);
-        popupMenu.add(fonts);
-
-
         JComponent content = Box.createVerticalBox();
-
 
         content.add(navPanel);
 
@@ -118,7 +48,6 @@ public class ClockAndPoem {
         //poem
         poemContainer = Box.createVerticalBox();
         content.add(poemContainer);
-        poemContainer.setComponentPopupMenu(popupMenu);
 
         content.add(colorBar);
 
@@ -173,33 +102,6 @@ public class ClockAndPoem {
                 }
             }
         });
-
-        SimpleDateFormat sf = new SimpleDateFormat("HH:mm:ss");
-        bottomPanel = new JPanel();
-        bottomPanel.setBorder(BorderFactory.createEtchedBorder());
-        JLabel timeLabel = new JLabel(sf.format(new Date()));
-        timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
-        bottomPanel.add(timeLabel);
-        content.add(bottomPanel);
-
-
-        JSlider timeSlider = new JSlider(0, 60, 10);
-        timeSlider.setPaintTrack(true);
-        timeSlider.setPaintTicks(true);
-        timeSlider.setPaintLabels(true);
-
-        timeSlider.setMajorTickSpacing(10);
-        timeSlider.setMinorTickSpacing(5);
-        timeSlider.setVisible(false);
-        content.add(timeSlider);
-
-        JPanel confirmPanel = new JPanel();
-        JButton confirmButton = new JButton("计时");
-        confirmPanel.add(confirmButton);
-        JButton cancelButton = new JButton("取消");
-        confirmPanel.add(cancelButton);
-        confirmPanel.setVisible(false);
-        content.add(confirmPanel);
 
 
         frame.add(content);
@@ -260,131 +162,13 @@ public class ClockAndPoem {
                 });
 
 
-        // when time over
-
-        AtomicBoolean down = new AtomicBoolean(true);
-
-        ActionListener move = ex -> {
-            Point location = frame.getLocation();
-            int y = down.get() ? Double.valueOf(location.getY()).intValue() + 5 : Double.valueOf(location.getY()).intValue() - 5;
-            if (y <= 0) {
-                down.set(true);
-            }
-            if (y > Env.getHeight() - frame.getSize().getHeight()) {
-                down.set(false);
-            }
-            frame.setLocation(Env.getWidth() - Double.valueOf(frame.getSize().getWidth()).intValue(), y);
-            frame.revalidate();
-        };
-
-        Timer moveTimer = new Timer(10, move);
-
-
-        // time setting
-
-        final Integer[] selectTime = {0};
-        final boolean[] timeSettingLock = {false};
-
-
-        confirmButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                timeSlider.setVisible(false);
-                confirmPanel.setVisible(false);
-                timeSettingLock[0] = false;
-
-                long end = System.currentTimeMillis() + selectTime[0] * 60 * 1000;
-                endDate = new Date(end);
-                timeLabel.setFont(new Font(Font.SERIF, Font.BOLD, 18));
-                timeLabel.setText("<html><font color='rgb(200,200,200)'>剩余" + (end - System.currentTimeMillis()) + "毫秒</font></html>");
-
-                frame.pack();
-            }
-        });
-
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                if (timeSettingLock[0]) {
-                    timeSlider.setVisible(false);
-                    confirmPanel.setVisible(false);
-                    timeSettingLock[0] = false;
-                    timeLabel.setText(sf.format(new Date()));
-                    frame.pack();
-
-                    return;
-                }
-            }
-        });
-
-        bottomPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                timeSlider.setVisible(true);
-                confirmPanel.setVisible(true);
-                timeSettingLock[0] = true;
-                timeLabel.setText("<html><font color='rgb(200,200,200)'>" + timeSlider.getValue() + "分钟后提醒</font></html>");
-                selectTime[0] = timeSlider.getValue();
-                endDate = null;
-
-                timeSlider.addChangeListener(new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        endDate = null;
-                        selectTime[0] = timeSlider.getValue();
-                        timeLabel.setText("<html><font color='rgb(200,200,200)'>" + selectTime[0] + "分钟后提醒</font></html>");
-                    }
-                });
-
-                frame.pack();
-
-            }
-        });
-
-
-        Timer endTimer = new Timer(200, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (endDate != null && !timeSettingLock[0]) {
-                    long cust = endDate.getTime() - System.currentTimeMillis();
-                    if (cust < 0) {
-                        cust = 0;
-                    }
-                    timeLabel.setText("<html><font color='rgb(200,200,200)'>剩余" + cust + "毫秒</font></html>");
-                    timeLabel.updateUI();
-                }
-            }
-        });
-
-        endTimer.start();
-
-
         long timeRecorder = 0;
 
         while (true) {
 
             if (timeRecorder > FREQ && timeRecorder % FREQ == 0 && !stopAutoRefresh) {
-
                 refreshPoem(false);
-
             }
-
-            if (endDate == null && !timeSettingLock[0]) {
-                timeLabel.setText(sf.format(new Date()));
-            }
-
-
-            if (endDate != null && endDate.before(new Date())) {
-                bottomPanel.setBackground(Color.RED);
-                timeLabel.setText(sf.format(new Date()));
-                bottomPanel.updateUI();
-                if (!moveTimer.isRunning()) {
-                    moveTimer.start();
-                }
-                endDate = null;
-            }
-
 
             try {
                 Thread.sleep(1000);
@@ -400,7 +184,6 @@ public class ClockAndPoem {
     public void hidePoem() {
         poemContainer.setVisible(false);
         colorBar.setVisible(false);
-        bottomPanel.setVisible(false);
 
         navPanel.setVisible(true);
 
@@ -418,7 +201,6 @@ public class ClockAndPoem {
 
         poemContainer.setVisible(true);
         colorBar.setVisible(true);
-        bottomPanel.setVisible(true);
 
         frame.pack();
 
